@@ -5,6 +5,7 @@ import ProjectCard from './ProjectCard';
 import { ArrowUp, ArrowDown, Github } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Slider } from '@/components/ui/slider';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProjectListProps {
   projects: Project[];
@@ -20,11 +21,13 @@ const ProjectList: React.FC<ProjectListProps> = ({
   onViewDetails,
 }) => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const projectsContainerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   
   // Calculate scroll position when selected project changes
   useEffect(() => {
-    if (scrollAreaRef.current && selectedIndex > 0) {
-      const projectElements = document.querySelectorAll('.project-card');
+    if (projectsContainerRef.current) {
+      const projectElements = projectsContainerRef.current.querySelectorAll('.project-card');
       if (projectElements[selectedIndex]) {
         // Scroll the element into view
         projectElements[selectedIndex].scrollIntoView({
@@ -37,11 +40,37 @@ const ProjectList: React.FC<ProjectListProps> = ({
 
   // Handle scroll navigation with arrow buttons
   const handleScrollUp = () => {
-    setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
+    setSelectedIndex(prev => {
+      const newIndex = prev > 0 ? prev - 1 : projects.length - 1;
+      // If wrapping to the end, wait a moment and then scroll
+      if (newIndex === projects.length - 1 && prev === 0) {
+        setTimeout(() => {
+          const projectElements = projectsContainerRef.current?.querySelectorAll('.project-card');
+          projectElements?.[newIndex]?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+          });
+        }, 50);
+      }
+      return newIndex;
+    });
   };
 
   const handleScrollDown = () => {
-    setSelectedIndex(prev => (prev < projects.length - 1 ? prev + 1 : projects.length - 1));
+    setSelectedIndex(prev => {
+      const newIndex = prev < projects.length - 1 ? prev + 1 : 0;
+      // If wrapping to the beginning, wait a moment and then scroll
+      if (newIndex === 0 && prev === projects.length - 1) {
+        setTimeout(() => {
+          const projectElements = projectsContainerRef.current?.querySelectorAll('.project-card');
+          projectElements?.[newIndex]?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+          });
+        }, 50);
+      }
+      return newIndex;
+    });
   };
 
   // Calculate the slider value based on selected index
@@ -56,7 +85,7 @@ const ProjectList: React.FC<ProjectListProps> = ({
   return (
     <div className="terminal-window flex-grow flex flex-col overflow-hidden">
       {/* Current selected project */}
-      <div className="mb-6">
+      <div className={`${isMobile ? 'mb-3' : 'mb-6'}`}>
         <ProjectCard 
           project={projects[selectedIndex]} 
           isSelected={true}
@@ -67,8 +96,8 @@ const ProjectList: React.FC<ProjectListProps> = ({
       {/* Projects list with custom scrollbar */}
       <div className="flex-grow flex gap-4 overflow-hidden">
         {/* List of other projects */}
-        <ScrollArea ref={scrollAreaRef} className="flex-grow">
-          <div className="space-y-4 pr-4">
+        <ScrollArea className="flex-grow h-full">
+          <div ref={projectsContainerRef} className="space-y-4 pr-4">
             {projects.map((project, index) => (
               <div key={project.id} className="project-card">
                 <ProjectCard 
