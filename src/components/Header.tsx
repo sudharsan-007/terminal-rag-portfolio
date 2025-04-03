@@ -2,29 +2,37 @@
 import React, { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, X } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 interface NavItem {
   label: string;
   shortcut: string;
-  active: boolean;
   href: string;
 }
-
-const navItems: NavItem[] = [
-  { label: 'Home', shortcut: 'ALT+H', active: true, href: '/' },
-  { label: 'Projects', shortcut: 'ALT+P', active: false, href: '/projects' },
-  { label: 'Blog', shortcut: 'ALT+B', active: false, href: '/blog' },
-  { label: 'Skills', shortcut: 'ALT+S', active: false, href: '/skills' },
-  { label: 'Resume', shortcut: 'ALT+R', active: false, href: '/resume' },
-  { label: 'Contact', shortcut: 'ALT+C', active: false, href: '/contact' },
-];
 
 const Header: React.FC = () => {
   const isMobile = useIsMobile();
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+  
+  const navItems: NavItem[] = [
+    { label: 'Home', shortcut: 'ALT+H', href: '/' },
+    { label: 'Projects', shortcut: 'ALT+P', href: '/projects' },
+    { label: 'Blog', shortcut: 'ALT+B', href: '/blog' },
+    { label: 'Skills', shortcut: 'ALT+S', href: '/skills' },
+    { label: 'Resume', shortcut: 'ALT+R', href: '/resume' },
+    { label: 'Contact', shortcut: 'ALT+C', href: '/contact' },
+  ];
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
+  };
+
+  const isActive = (path: string): boolean => {
+    if (path === '/' && location.pathname === '/') {
+      return true;
+    }
+    return path !== '/' && location.pathname.startsWith(path);
   };
 
   return (
@@ -52,7 +60,7 @@ const Header: React.FC = () => {
                     <a
                       href={item.href}
                       className={`block py-3 px-4 hover:bg-terminal-text/10 ${
-                        item.active ? 'text-terminal-accent1' : 'text-terminal-text'
+                        isActive(item.href) ? 'text-terminal-accent1' : 'text-terminal-text'
                       }`}
                       onClick={() => setMenuOpen(false)}
                     >
@@ -71,7 +79,7 @@ const Header: React.FC = () => {
               key={item.label}
               href={item.href}
               className={`px-4 py-2 rounded border ${
-                item.active 
+                isActive(item.href) 
                   ? 'bg-terminal-accent1 text-white border-terminal-accent1' 
                   : 'border-terminal-text text-terminal-text hover:bg-terminal-text/10'
               }`}
