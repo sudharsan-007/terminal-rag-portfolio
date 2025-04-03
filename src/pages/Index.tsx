@@ -19,16 +19,16 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-terminal-bg">
+    <div className="h-screen flex flex-col bg-terminal-bg overflow-hidden">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: isLoaded ? 1 : 0 }}
         transition={{ duration: 0.5 }}
-        className="container mx-auto flex flex-col min-h-screen px-4"
+        className="container mx-auto flex flex-col h-screen px-4"
       >
         <Header />
         
-        <main className="flex-grow flex flex-col mt-4 mb-8">
+        <main className="flex-grow flex flex-col mt-4 mb-8 overflow-hidden">
           <div className="mb-4">
             <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
               sudharsan@portfolio:~
@@ -37,7 +37,7 @@ const Index = () => {
           
           <AsciiLogo />
           
-          <Terminal className="flex-grow" />
+          <Terminal className="flex-grow overflow-hidden" />
         </main>
         
         <Footer />

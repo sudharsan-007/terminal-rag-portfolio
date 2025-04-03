@@ -35,7 +35,7 @@ const TypewriterEffect: React.FC<TypewriterEffectProps> = ({
   }, [currentIndex, text, speed]);
 
   return (
-    <div className="font-mono whitespace-pre-wrap">
+    <div className="font-mono whitespace-pre-wrap overflow-hidden">
       {displayedText}
       {!isComplete && <span className="animate-cursor-blink">▌</span>}
     </div>
