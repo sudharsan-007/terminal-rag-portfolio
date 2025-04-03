@@ -2,16 +2,38 @@
 import React, { useState, useRef, useCallback } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { skillsData } from '@/data/skillsData';
-import { SkillNode } from '@/types/skill';
+import { SkillNode, SkillLink } from '@/types/skill';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
 
 const SkillsNetwork: React.FC = () => {
   const graphRef = useRef<any>();
   const isMobile = useIsMobile();
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
+  const [status, setStatus] = useState<string>("Hover over nodes to see skills");
+
+  // Group colors mapping
+  const groupColors: Record<string, string> = {
+    'Languages': '#4aff91',
+    'Libraries': '#9b87f5',
+    'Tools': '#33C3F0',
+    'Hardware': '#F97316',
+    'Protocols': '#D946EF',
+    'SoftSkills': '#FEC6A1',
+    'Interests': '#D3E4FD'
+  };
 
   const handleNodeClick = useCallback((node: SkillNode) => {
-    setSelectedNode(prevNode => prevNode?.id === node.id ? null : node);
+    if (selectedNode?.id === node.id) {
+      // If clicking the same node again, reset view
+      setSelectedNode(null);
+      setStatus("Hover over nodes to see skills");
+      graphRef.current?.zoomToFit(400, 50);
+      return;
+    }
+
+    setSelectedNode(node);
+    setStatus(`Selected: ${node.name}`);
     
     // Aim at node from outside
     const distance = 200;
@@ -25,48 +47,150 @@ const SkillsNetwork: React.FC = () => {
       );
       graphRef.current.zoom(2, 1000);
     }
-  }, []);
+  }, [selectedNode]);
+
+  const resetView = () => {
+    setSelectedNode(null);
+    setStatus("Hover over nodes to see skills");
+    graphRef.current?.zoomToFit(400, 50);
+  };
 
   const getNodeColor = useCallback((node: SkillNode) => {
-    if (selectedNode?.id === node.id) return '#ffffff';
+    if (selectedNode) {
+      // If a node is selected, highlight it and connected nodes
+      if (selectedNode.id === node.id) return '#ffffff';
+      
+      // Check if this node is connected to the selected node
+      const isConnected = skillsData.links.some(link => 
+        (link.source === selectedNode.id && link.target === node.id) || 
+        (link.source === node.id && link.target === selectedNode.id)
+      );
+      
+      if (isConnected) return node.color || getGroupColor(node.group);
+      return '#8E9196'; // Gray out unrelated nodes
+    }
+    
     return node.color || getGroupColor(node.group);
   }, [selectedNode]);
   
   const getGroupColor = (group: string) => {
-    switch(group) {
-      case 'Languages': return '#4aff91';
-      case 'Libraries': return '#9b87f5';
-      case 'Tools': return '#33C3F0';
-      case 'Hardware': return '#F97316';
-      case 'Protocols': return '#D946EF';
-      case 'SoftSkills': return '#FEC6A1';
-      case 'Interests': return '#D3E4FD';
-      default: return '#8E9196';
-    }
+    return groupColors[group] || '#8E9196';
   };
 
   const getNodeRadius = useCallback((node: SkillNode) => {
     const baseSize = isMobile ? 4 : 6;
+    // Make selected node bigger
+    if (selectedNode?.id === node.id) {
+      return (node.radius || (baseSize + node.level)) * 1.5;
+    }
     return node.radius || (baseSize + node.level);
-  }, [isMobile]);
+  }, [isMobile, selectedNode]);
+
+  const getLinkColor = useCallback((link: SkillLink) => {
+    if (!selectedNode) return '#666';
+    
+    // Check if this link connects to the selected node
+    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+
+    if (sourceId === selectedNode.id || targetId === selectedNode.id) {
+      return '#ffffff';
+    }
+    return '#666';
+  }, [selectedNode]);
+
+  const getLinkWidth = useCallback((link: SkillLink) => {
+    if (!selectedNode) return 1;
+    
+    // Check if this link connects to the selected node
+    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+
+    if (sourceId === selectedNode.id || targetId === selectedNode.id) {
+      return 2;
+    }
+    return 0.5; // Thinner lines for unrelated connections
+  }, [selectedNode]);
 
   return (
     <div className="w-full h-full relative">
+      {/* Status header */}
+      <div className="absolute top-0 left-0 right-0 z-10 bg-terminal-navy/90 p-2 flex justify-between items-center">
+        <div className="text-terminal-text text-sm">{status}</div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={resetView} 
+          className="text-xs"
+        >
+          Reset View
+        </Button>
+      </div>
+      
+      {/* Group labels/legend */}
+      <div className="absolute top-12 right-4 z-10 bg-terminal-navy/80 p-2 rounded border border-terminal-text">
+        <div className="text-xs font-bold mb-1 text-terminal-text">Skill Groups</div>
+        {Object.entries(groupColors).map(([group, color]) => (
+          <div key={group} className="flex items-center mb-1 last:mb-0">
+            <div 
+              className="w-3 h-3 rounded-full mr-2" 
+              style={{ backgroundColor: color }}
+            ></div>
+            <span className="text-terminal-text text-xs">{group}</span>
+          </div>
+        ))}
+      </div>
+
       <ForceGraph2D
         ref={graphRef}
         graphData={skillsData}
         nodeRelSize={1}
         nodeVal={(node: SkillNode) => getNodeRadius(node)}
         nodeColor={(node: SkillNode) => getNodeColor(node)}
-        nodeLabel={(node: SkillNode) => node.name}
+        nodeLabel={(node: SkillNode) => `${node.name} (${node.group})`}
         linkDirectionalParticles={2}
         linkDirectionalParticleWidth={1.5}
-        linkWidth={(link) => (link.source === selectedNode?.id || link.target === selectedNode?.id) ? 2 : 1}
-        linkColor={(link) => (link.source === selectedNode?.id || link.target === selectedNode?.id) ? '#ffffff' : '#666'}
+        linkWidth={getLinkWidth}
+        linkColor={getLinkColor}
         onNodeClick={handleNodeClick}
         cooldownTicks={100}
         onEngineStop={() => graphRef.current?.zoomToFit(400, 50)}
         linkDirectionalParticleSpeed={0.01}
+        nodeCanvasObject={(node, ctx, globalScale) => {
+          const label = node.name;
+          const fontSize = 12/globalScale;
+          ctx.font = `${fontSize}px Sans-Serif`;
+          const textWidth = ctx.measureText(label).width;
+          const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2);
+
+          // Draw node
+          ctx.beginPath();
+          ctx.fillStyle = getNodeColor(node as SkillNode);
+          ctx.arc(node.x || 0, node.y || 0, getNodeRadius(node as SkillNode), 0, 2 * Math.PI);
+          ctx.fill();
+          
+          // Draw text only if we're zoomed in enough or if it's the selected node
+          if (globalScale > 0.8 || selectedNode?.id === node.id) {
+            // Text background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(
+              (node.x || 0) - bckgDimensions[0] / 2,
+              (node.y || 0) + getNodeRadius(node as SkillNode) + 2,
+              bckgDimensions[0],
+              bckgDimensions[1]
+            );
+            
+            // Text
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = selectedNode?.id === node.id ? '#ffffff' : '#efefef';
+            ctx.fillText(
+              label,
+              node.x || 0,
+              (node.y || 0) + getNodeRadius(node as SkillNode) + fontSize/2 + 4
+            );
+          }
+        }}
       />
 
       {selectedNode && (
