@@ -2,7 +2,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Project } from '@/types/project';
 import ProjectCard from './ProjectCard';
-import { ArrowUp, ArrowDown } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -36,20 +35,25 @@ const ProjectList: React.FC<ProjectListProps> = ({
     }
   }, [selectedIndex]);
 
-  // Handle scroll navigation with arrow buttons
-  const handleScrollUp = () => {
-    setSelectedIndex(prev => {
-      const newIndex = prev > 0 ? prev - 1 : projects.length - 1;
-      return newIndex;
-    });
-  };
+  // Handle keyboard navigation (this remains as it's for keyboard accessibility)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowUp') {
+        setSelectedIndex(prev => {
+          const newIndex = prev > 0 ? prev - 1 : projects.length - 1;
+          return newIndex;
+        });
+      } else if (e.key === 'ArrowDown') {
+        setSelectedIndex(prev => {
+          const newIndex = prev < projects.length - 1 ? prev + 1 : 0;
+          return newIndex;
+        });
+      }
+    };
 
-  const handleScrollDown = () => {
-    setSelectedIndex(prev => {
-      const newIndex = prev < projects.length - 1 ? prev + 1 : 0;
-      return newIndex;
-    });
-  };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setSelectedIndex, projects.length]);
 
   return (
     <div className="terminal-window flex-grow flex flex-col overflow-hidden">
@@ -62,53 +66,22 @@ const ProjectList: React.FC<ProjectListProps> = ({
         />
       </div>
       
-      {/* Projects list with custom scrollbar */}
-      <div className="flex-grow flex gap-4 overflow-hidden">
-        {/* List of other projects with integrated scrollbar */}
-        <div className="flex-grow h-full relative">
-          <ScrollArea className="h-full">
-            <div ref={projectsContainerRef} className="space-y-4 pr-4">
-              {projects.map((project, index) => (
-                <div key={project.id} className="project-card">
-                  <ProjectCard 
-                    project={project} 
-                    isSelected={selectedIndex === index}
-                    onClick={() => setSelectedIndex(index)}
-                    isCompact={true}
-                  />
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-        
-        {/* Navigation arrows */}
-        <div className="flex flex-col items-center justify-between my-2">
-          <button 
-            className="p-2 rounded-full bg-terminal-navy hover:bg-terminal-text/10"
-            onClick={handleScrollUp}
-            aria-label="Scroll up"
-          >
-            <ArrowUp className="text-terminal-text w-5 h-5" />
-          </button>
-          
-          <div className="w-1 h-28 bg-terminal-text/20 rounded-full my-4 relative">
-            <div 
-              className="w-1.5 h-3 bg-terminal-text absolute rounded-full transform -translate-x-1/4"
-              style={{ 
-                top: `${(selectedIndex / (projects.length - 1)) * 100}%`,
-              }}
-            ></div>
+      {/* Projects list with custom scrollbar - now just a single ScrollArea */}
+      <div className="flex-grow h-full">
+        <ScrollArea className="h-full">
+          <div ref={projectsContainerRef} className="space-y-4 pr-4">
+            {projects.map((project, index) => (
+              <div key={project.id} className="project-card">
+                <ProjectCard 
+                  project={project} 
+                  isSelected={selectedIndex === index}
+                  onClick={() => setSelectedIndex(index)}
+                  isCompact={true}
+                />
+              </div>
+            ))}
           </div>
-          
-          <button 
-            className="p-2 rounded-full bg-terminal-navy hover:bg-terminal-text/10"
-            onClick={handleScrollDown}
-            aria-label="Scroll down"
-          >
-            <ArrowDown className="text-terminal-text w-5 h-5" />
-          </button>
-        </div>
+        </ScrollArea>
       </div>
       
       {/* Navigation help */}
