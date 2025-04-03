@@ -13,7 +13,6 @@ export interface SkillNode {
   vy?: number;
   fx?: number | null;
   fy?: number | null;
-  highlighted?: boolean;
 }
 
 export interface SkillLink {
