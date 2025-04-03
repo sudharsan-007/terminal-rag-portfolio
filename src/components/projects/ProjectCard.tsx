@@ -36,21 +36,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             <h3 className="text-terminal-accent1 text-md font-semibold">
               {isSelected && '> '}{project.title}
             </h3>
-            <div className="text-terminal-text/70 text-sm">
-              {project.date}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {project.technologies.slice(0, 3).map((tech, idx) => (
-              <span key={idx} className="text-xs px-2 py-1 rounded bg-terminal-text/10 text-terminal-text">
-                {tech}
-              </span>
-            ))}
-            {project.technologies.length > 3 && (
-              <span className="text-xs px-2 py-1 rounded bg-terminal-text/10 text-terminal-text">
-                +{project.technologies.length - 3} more
-              </span>
-            )}
           </div>
         </div>
         <p className="text-sm text-terminal-text mt-1 line-clamp-1">

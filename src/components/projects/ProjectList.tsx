@@ -71,14 +71,12 @@ const ProjectList: React.FC<ProjectListProps> = ({
           <div className="space-y-4 pr-4">
             {projects.map((project, index) => (
               <div key={project.id} className="project-card">
-                {selectedIndex !== index && (
-                  <ProjectCard 
-                    project={project} 
-                    isSelected={false}
-                    onClick={() => setSelectedIndex(index)}
-                    isCompact={true}
-                  />
-                )}
+                <ProjectCard 
+                  project={project} 
+                  isSelected={selectedIndex === index}
+                  onClick={() => setSelectedIndex(index)}
+                  isCompact={true}
+                />
               </div>
             ))}
           </div>
