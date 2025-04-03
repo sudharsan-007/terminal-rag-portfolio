@@ -8,4 +8,6 @@ export interface Project {
   technologies: string[];
   keyHighlights: string[];
   githubUrl?: string;
+  liveUrl?: string;
+  featured?: boolean;
 }
