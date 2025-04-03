@@ -16,8 +16,8 @@ export interface SkillNode {
 }
 
 export interface SkillLink {
-  source: string;
-  target: string;
+  source: string | { id: string } | null;
+  target: string | { id: string } | null;
   strength: number;
 }
 

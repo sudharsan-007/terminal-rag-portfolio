@@ -117,11 +117,14 @@ const SkillsNetwork: React.FC = () => {
     if (!selectedNode) return '#666';
     
     // Handle the case when source or target might be objects instead of strings
-    const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+    const sourceId = typeof link.source === 'object' 
+      ? (link.source?.id ?? '') 
+      : (link.source ?? '');
     
-    if (!sourceId || !targetId) return '#666';
-
+    const targetId = typeof link.target === 'object' 
+      ? (link.target?.id ?? '') 
+      : (link.target ?? '');
+    
     if (sourceId === selectedNode.id || targetId === selectedNode.id) {
       return '#ffffff';
     }
@@ -132,11 +135,14 @@ const SkillsNetwork: React.FC = () => {
     if (!selectedNode) return 1;
     
     // Handle the case when source or target might be objects instead of strings
-    const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+    const sourceId = typeof link.source === 'object' 
+      ? (link.source?.id ?? '') 
+      : (link.source ?? '');
     
-    if (!sourceId || !targetId) return 0.5;
-
+    const targetId = typeof link.target === 'object' 
+      ? (link.target?.id ?? '') 
+      : (link.target ?? '');
+    
     if (sourceId === selectedNode.id || targetId === selectedNode.id) {
       return 2;
     }
