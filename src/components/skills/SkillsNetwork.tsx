@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { skillsData } from '@/data/skillsData';
 import { SkillNode, SkillLink } from '@/types/skill';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 
 const SkillsNetwork: React.FC = () => {
   const graphRef = useRef<any>();
+  const graphContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [status, setStatus] = useState<string>("Hover over nodes to see skills");
@@ -23,12 +24,44 @@ const SkillsNetwork: React.FC = () => {
     'Interests': '#D3E4FD'
   };
 
+  const resetView = useCallback(() => {
+    setSelectedNode(null);
+    setStatus("Hover over nodes to see skills");
+    graphRef.current?.zoomToFit(400, 50);
+  }, []);
+
+  // Handle background click to exit selected view
+  const handleBackgroundClick = useCallback((event: React.MouseEvent) => {
+    // Only reset if clicking directly on the graph container (not on nodes or UI elements)
+    if (event.target === graphContainerRef.current) {
+      resetView();
+    }
+  }, [resetView]);
+
+  // Add keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Reset view on Escape key
+      if (event.key === 'Escape') {
+        resetView();
+      }
+      
+      // Reset view on Ctrl+R
+      if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+        event.preventDefault(); // Prevent browser refresh
+        resetView();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [resetView]);
+
   const handleNodeClick = useCallback((node: SkillNode) => {
     if (selectedNode?.id === node.id) {
-      // If clicking the same node again, reset view
-      setSelectedNode(null);
-      setStatus("Hover over nodes to see skills");
-      graphRef.current?.zoomToFit(400, 50);
+      resetView();
       return;
     }
 
@@ -47,13 +80,7 @@ const SkillsNetwork: React.FC = () => {
       );
       graphRef.current.zoom(2, 1000);
     }
-  }, [selectedNode]);
-
-  const resetView = () => {
-    setSelectedNode(null);
-    setStatus("Hover over nodes to see skills");
-    graphRef.current?.zoomToFit(400, 50);
-  };
+  }, [selectedNode, resetView]);
 
   const getNodeColor = useCallback((node: SkillNode) => {
     if (selectedNode) {
@@ -89,9 +116,11 @@ const SkillsNetwork: React.FC = () => {
   const getLinkColor = useCallback((link: SkillLink) => {
     if (!selectedNode) return '#666';
     
-    // Check if this link connects to the selected node
-    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+    // Handle the case when source or target might be objects instead of strings
+    const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+    
+    if (!sourceId || !targetId) return '#666';
 
     if (sourceId === selectedNode.id || targetId === selectedNode.id) {
       return '#ffffff';
@@ -102,9 +131,11 @@ const SkillsNetwork: React.FC = () => {
   const getLinkWidth = useCallback((link: SkillLink) => {
     if (!selectedNode) return 1;
     
-    // Check if this link connects to the selected node
-    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+    // Handle the case when source or target might be objects instead of strings
+    const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+    
+    if (!sourceId || !targetId) return 0.5;
 
     if (sourceId === selectedNode.id || targetId === selectedNode.id) {
       return 2;
@@ -113,18 +144,25 @@ const SkillsNetwork: React.FC = () => {
   }, [selectedNode]);
 
   return (
-    <div className="w-full h-full relative">
+    <div 
+      ref={graphContainerRef}
+      className="w-full h-full relative" 
+      onClick={handleBackgroundClick}
+    >
       {/* Status header */}
       <div className="absolute top-0 left-0 right-0 z-10 bg-terminal-navy/90 p-2 flex justify-between items-center">
         <div className="text-terminal-text text-sm">{status}</div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={resetView} 
-          className="text-xs"
-        >
-          Reset View
-        </Button>
+        <div className="flex items-center space-x-2 text-xs text-terminal-text">
+          <span>Press <kbd className="px-1 py-0.5 bg-terminal-text/20 rounded">Esc</kbd> or <kbd className="px-1 py-0.5 bg-terminal-text/20 rounded">Ctrl+R</kbd> to reset</span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={resetView} 
+            className="text-xs"
+          >
+            Reset View
+          </Button>
+        </div>
       </div>
       
       {/* Group labels/legend */}
