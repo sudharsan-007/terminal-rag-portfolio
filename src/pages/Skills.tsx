@@ -18,12 +18,12 @@ const Skills: React.FC = () => {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-terminal-bg overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-terminal-bg overflow-hidden">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: isLoaded ? 1 : 0 }}
         transition={{ duration: 0.5 }}
-        className="container mx-auto flex flex-col h-screen px-4"
+        className="container mx-auto flex flex-col min-h-screen px-4"
       >
         <Header />
         
