@@ -117,8 +117,12 @@ const SkillsNetwork: React.FC = () => {
   const getLinkColor = useCallback((link: SkillLink) => {
     if (!selectedNode) return '#666';
     
-    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+    // Use type assertion or type guards to handle potentially complex objects
+    const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+    
+    // Add null checks to prevent TypeScript errors
+    if (sourceId === null || targetId === null) return '#444444';
     
     return (sourceId === selectedNode.id || targetId === selectedNode.id) ? '#ffffff' : '#444444';
   }, [selectedNode]);
@@ -126,8 +130,12 @@ const SkillsNetwork: React.FC = () => {
   const getLinkWidth = useCallback((link: SkillLink) => {
     if (!selectedNode) return 1;
     
-    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+    // Use type assertion or type guards to handle potentially complex objects
+    const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+    
+    // Add null checks to prevent TypeScript errors
+    if (sourceId === null || targetId === null) return 0.5;
     
     return (sourceId === selectedNode.id || targetId === selectedNode.id) ? 2 : 0.5;
   }, [selectedNode]);
