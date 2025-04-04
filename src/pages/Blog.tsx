@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -24,7 +23,6 @@ const Blog: React.FC = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // Force list view on mobile
   useEffect(() => {
     if (isMobile) {
       setViewMode('list');
@@ -36,11 +34,9 @@ const Blog: React.FC = () => {
     return searchContent.includes(searchQuery.toLowerCase());
   });
 
-  // Calculate grid columns based on view mode
   const postsPerRow = viewMode === 'grid' ? 3 : 1;
 
   useEffect(() => {
-    // Simulate loading to add a smooth entrance effect
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 200);
@@ -49,17 +45,13 @@ const Blog: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Reset selected post index when filtered posts change
     if (selectedPostIndex >= filteredPosts.length) {
       setSelectedPostIndex(filteredPosts.length > 0 ? 0 : -1);
     }
     
-    // Skip keyboard navigation setup on mobile
     if (isMobile) return;
     
-    // Set up global keyboard event listener
     const handleKeyDown = (e: globalThis.KeyboardEvent) => {
-      // Skip if focused on input
       if (document.activeElement?.tagName === 'INPUT') {
         if (e.key === 'Escape') {
           searchInputRef.current?.blur();
@@ -95,7 +87,6 @@ const Blog: React.FC = () => {
           break;
         case 'v':
           if (e.ctrlKey || e.metaKey) {
-            // Do not switch view mode on paste
             return;
           }
           toggleViewMode();
@@ -110,7 +101,6 @@ const Blog: React.FC = () => {
   const navigatePost = (direction: 'up' | 'down' | 'left' | 'right') => {
     if (filteredPosts.length === 0) return;
     
-    // If nothing is selected, select the first item
     if (selectedPostIndex === -1) {
       setSelectedPostIndex(0);
       return;
@@ -138,7 +128,6 @@ const Blog: React.FC = () => {
           break;
       }
     } else {
-      // List view - only up and down work
       switch (direction) {
         case 'up':
         case 'left':
@@ -153,7 +142,6 @@ const Blog: React.FC = () => {
     
     setSelectedPostIndex(newIndex);
     
-    // Ensure the element is visible by scrolling to it if needed
     const element = document.getElementById(`blog-post-${newIndex}`);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -182,10 +170,8 @@ const Blog: React.FC = () => {
           </div>
           
           <div className="terminal-window flex-grow overflow-hidden flex flex-col">
-            {/* Search and View Controls in a flex row layout - Now outside the scrollable area */}
             <div className="p-6 pb-3">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                {/* Search takes ~80% width */}
+              <div className="flex flex-col sm:flex-row items-center gap-4">
                 <div className="w-full sm:w-4/5">
                   <BlogSearch 
                     searchQuery={searchQuery}
@@ -195,9 +181,8 @@ const Blog: React.FC = () => {
                   />
                 </div>
                 
-                {/* View Toggle takes ~20% width */}
                 {!isMobile && (
-                  <div className="w-full sm:w-1/5 flex justify-end">
+                  <div className="w-full sm:w-1/5 flex justify-end items-center">
                     <ViewModeToggle 
                       viewMode={viewMode} 
                       setViewMode={setViewMode}
@@ -207,7 +192,6 @@ const Blog: React.FC = () => {
               </div>
             </div>
             
-            {/* Scrollable Blog List */}
             <ScrollArea className="flex-grow px-6">
               <div className="pr-4">
                 <BlogList 
@@ -225,10 +209,8 @@ const Blog: React.FC = () => {
         <Footer />
       </motion.div>
       
-      {/* Background effects */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
       
-      {/* Only show keyboard navigation help on desktop */}
       {!isMobile && <KeyboardNavHelp />}
     </div>
   );
