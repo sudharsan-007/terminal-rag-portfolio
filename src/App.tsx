@@ -11,6 +11,7 @@ import Skills from "./pages/Skills";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
+import Contact from "./pages/Contact";
 
 const App = () => {
   // Create a client
@@ -28,6 +29,7 @@ const App = () => {
             <Route path="/skills" element={<Skills />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
