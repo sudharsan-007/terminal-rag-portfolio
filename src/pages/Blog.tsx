@@ -182,24 +182,29 @@ const Blog: React.FC = () => {
           </div>
           
           <div className="terminal-window flex-grow overflow-hidden flex flex-col">
-            {/* Search and View Controls - Now outside the scrollable area */}
+            {/* Search and View Controls in a flex row layout - Now outside the scrollable area */}
             <div className="p-6 pb-3">
-              <BlogSearch 
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                searchInputRef={searchInputRef}
-                filteredPostsCount={filteredPosts.length}
-              />
-              
-              {/* Hide view mode toggle on mobile */}
-              {!isMobile && (
-                <div className="flex justify-end mb-2">
-                  <ViewModeToggle 
-                    viewMode={viewMode} 
-                    setViewMode={setViewMode}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                {/* Search takes ~80% width */}
+                <div className="w-full sm:w-4/5">
+                  <BlogSearch 
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    searchInputRef={searchInputRef}
+                    filteredPostsCount={filteredPosts.length}
                   />
                 </div>
-              )}
+                
+                {/* View Toggle takes ~20% width */}
+                {!isMobile && (
+                  <div className="w-full sm:w-1/5 flex justify-end">
+                    <ViewModeToggle 
+                      viewMode={viewMode} 
+                      setViewMode={setViewMode}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
             
             {/* Scrollable Blog List */}

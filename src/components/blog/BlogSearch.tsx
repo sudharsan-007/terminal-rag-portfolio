@@ -17,8 +17,8 @@ const BlogSearch: React.FC<BlogSearchProps> = ({
   filteredPostsCount
 }) => {
   return (
-    <div className="mb-6">
-      <div className="relative mb-2">
+    <div>
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-terminal-text/50" size={18} />
         <Input
           ref={searchInputRef}
@@ -30,7 +30,7 @@ const BlogSearch: React.FC<BlogSearchProps> = ({
         />
       </div>
       
-      <div className="text-sm text-terminal-text/70">
+      <div className="text-sm text-terminal-text/70 mt-2">
         <span>{filteredPostsCount} {filteredPostsCount === 1 ? 'post' : 'posts'} found</span>
       </div>
     </div>
