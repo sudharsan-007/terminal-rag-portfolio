@@ -9,6 +9,7 @@ import BlogList from '@/components/blog/BlogList';
 import BlogSearch from '@/components/blog/BlogSearch';
 import ViewModeToggle from '@/components/blog/ViewModeToggle';
 import KeyboardNavHelp from '@/components/blog/KeyboardNavHelp';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type ViewMode = 'grid' | 'list';
 
@@ -168,31 +169,35 @@ const Blog: React.FC = () => {
             </div>
           </div>
           
-          <div className="terminal-window flex-grow overflow-auto">
-            <div className="p-6">
-              <div className="mb-6">
-                <BlogSearch 
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  searchInputRef={searchInputRef}
-                  filteredPostsCount={filteredPosts.length}
-                />
-                
-                <div className="flex justify-end mb-6">
-                  <ViewModeToggle 
-                    viewMode={viewMode} 
-                    setViewMode={setViewMode}
-                  />
-                </div>
-              </div>
-
-              <BlogList 
-                posts={filteredPosts}
-                viewMode={viewMode}
-                selectedPostIndex={selectedPostIndex}
-                setSelectedPostIndex={setSelectedPostIndex}
+          <div className="terminal-window flex-grow overflow-hidden flex flex-col">
+            {/* Search and View Controls - Now outside the scrollable area */}
+            <div className="p-6 pb-3">
+              <BlogSearch 
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                searchInputRef={searchInputRef}
+                filteredPostsCount={filteredPosts.length}
               />
+              
+              <div className="flex justify-end mb-2">
+                <ViewModeToggle 
+                  viewMode={viewMode} 
+                  setViewMode={setViewMode}
+                />
+              </div>
             </div>
+            
+            {/* Scrollable Blog List */}
+            <ScrollArea className="flex-grow px-6">
+              <div className="pr-4">
+                <BlogList 
+                  posts={filteredPosts}
+                  viewMode={viewMode}
+                  selectedPostIndex={selectedPostIndex}
+                  setSelectedPostIndex={setSelectedPostIndex}
+                />
+              </div>
+            </ScrollArea>
           </div>
         </main>
         
