@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,7 +6,7 @@ import Footer from '@/components/Footer';
 import { getAllBlogPosts } from '@/data/blogData';
 import BlogCard from '@/components/blog/BlogCard';
 import { Input } from '@/components/ui/input';
-import { Search, LayoutGrid, List, ArrowDown, ArrowUp, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Search, LayoutGrid, List } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type ViewMode = 'grid' | 'list';
@@ -27,7 +26,6 @@ const Blog: React.FC = () => {
   });
 
   // Calculate grid columns based on view mode
-  const gridColumns = viewMode === 'grid' ? 3 : 1;
   const postsPerRow = viewMode === 'grid' ? 3 : 1;
 
   useEffect(() => {
@@ -184,28 +182,26 @@ const Blog: React.FC = () => {
                   />
                 </div>
                 
-                <p className="text-terminal-text/80 mb-5 text-xs">
-                  Exploring the frontiers of machine learning, AI, and beyond.
-                </p>
-                
                 <div className="flex justify-between items-center mb-6">
-                  <div className="text-sm text-terminal-text/70 flex items-center gap-2">
+                  <div className="text-sm text-terminal-text/70">
                     <span>{filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found</span>
-                    <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs">
-                      {viewMode === 'grid' ? 'Grid View (V)' : 'List View (V)'}
-                    </div>
-                    <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs">
-                      Press '/' to search
-                    </div>
                   </div>
-                  <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as ViewMode)}>
-                    <ToggleGroupItem value="grid" aria-label="Grid view">
-                      <LayoutGrid size={18} />
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="list" aria-label="List view">
-                      <List size={18} />
-                    </ToggleGroupItem>
-                  </ToggleGroup>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs flex items-center gap-1">
+                      <span className="font-mono">V</span>
+                      <span>{viewMode === 'grid' ? 'Grid View' : 'List View'}</span>
+                    </div>
+                    
+                    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as ViewMode)}>
+                      <ToggleGroupItem value="grid" aria-label="Grid view">
+                        <LayoutGrid size={18} />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="list" aria-label="List view">
+                        <List size={18} />
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
                 </div>
               </div>
 
@@ -252,26 +248,20 @@ const Blog: React.FC = () => {
       {/* Background effects */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
       
-      {/* Keyboard navigation helper */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-terminal-navy/80 border border-terminal-text/30 rounded-lg px-4 py-2 text-xs text-terminal-text/70 flex gap-3">
-        <div className="flex items-center gap-1">
-          <span className="bg-terminal-text/20 px-1 rounded">↑</span>
-          <span className="bg-terminal-text/20 px-1 rounded">↓</span>
-          <span className="bg-terminal-text/20 px-1 rounded">←</span>
-          <span className="bg-terminal-text/20 px-1 rounded">→</span>
-          <span>Navigate</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="bg-terminal-text/20 px-1 rounded">Enter</span>
-          <span>Open</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="bg-terminal-text/20 px-1 rounded">V</span>
-          <span>Toggle View</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="bg-terminal-text/20 px-1 rounded">/</span>
-          <span>Search</span>
+      {/* Keyboard navigation helper - Styled similarly to Projects page */}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-terminal-navy/80 border border-terminal-text/30 rounded-lg px-4 py-2 text-xs text-terminal-text/70">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <p className="mb-1">↑/↓/←/→: Navigate posts</p>
+            <p>Enter: Open post</p>
+          </div>
+          <div>
+            <p className="mb-1">V: Toggle view mode</p>
+            <p>/: Focus search</p>
+          </div>
+          <div className="md:col-span-2">
+            <p className="mb-1">ESC: Return from search / details</p>
+          </div>
         </div>
       </div>
     </div>

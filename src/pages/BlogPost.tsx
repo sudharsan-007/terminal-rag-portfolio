@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
-import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogTags from '@/components/blog/BlogTags';
@@ -44,6 +44,16 @@ const BlogPost: React.FC = () => {
     
     // Scroll to top when post changes
     window.scrollTo(0, 0);
+
+    // Set up ESC key to navigate back to blog list
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        navigate('/blog');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [slug, navigate, post?.id]);
 
   if (!post) return null;
@@ -127,6 +137,14 @@ const BlogPost: React.FC = () => {
           </section>
         )}
       </main>
+
+      {/* Keyboard navigation helper */}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-terminal-navy/80 border border-terminal-text/30 rounded-lg px-4 py-2 text-xs text-terminal-text/70 flex gap-3">
+        <div className="flex items-center gap-1">
+          <span className="bg-terminal-text/20 px-1 rounded">ESC</span>
+          <span>Return to blog list</span>
+        </div>
+      </div>
 
       <Footer />
     </div>
