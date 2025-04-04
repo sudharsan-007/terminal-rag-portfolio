@@ -10,50 +10,65 @@ const CommitHistory = () => {
   
   // Animation state
   const animationRef = useRef<number | null>(null);
+  
+  // Grid settings
+  const cellSize = 8;
+  const gridRef = useRef<{
+    width: number, 
+    height: number, 
+    cells: {x: number, y: number, intensity: number}[],
+    occupied: boolean[][]
+  }>({
+    width: 0,
+    height: 0,
+    cells: [],
+    occupied: []
+  });
+  
+  // Snake settings
   const snakeRef = useRef<{
     positions: {x: number, y: number}[];
     direction: {x: number, y: number};
     speed: number;
     length: number;
+    nextDirection: {x: number, y: number};
+    moveCounter: number;
+    moveDelay: number;
   }>({
-    positions: Array(10).fill(0).map((_, i) => ({x: 50 - i * 10, y: canvasHeight / 2})),
+    positions: [],
     direction: {x: 1, y: 0},
-    speed: 2,
-    length: 10
+    speed: 1,
+    length: 10,
+    nextDirection: {x: 1, y: 0}, // Buffer next direction for grid-based movement
+    moveCounter: 0,
+    moveDelay: 10 // Controls snake speed (higher = slower)
   });
   
   const foodRef = useRef<{x: number, y: number} | null>(null);
-  const gridRef = useRef<{width: number, height: number, cells: {x: number, y: number, intensity: number}[]}>({
-    width: 0,
-    height: 0,
-    cells: []
-  });
   
-  const logoObstaclesRef = useRef<{x: number, y: number, width: number, height: number, type: string}[]>([]);
-
-  // ASCII representations (simplified for this example)
+  // Logo ASCII representations with green color
   const linkedInAscii = [
-    "██  ██ █   █ █  █ █████ ██  ██ ████ █   █",
-    "██  ██ ██  █ █ █  █     ██  ██ █  █ ██  █",
-    "██  ██ █ █ █ ██   ████  ██  ██ █  █ █ █ █",
-    "██  ██ █  ██ █ █  █     ██  ██ █  █ █  ██",
-    "█████  █   █ █  █ █████ █████  ████ █   █"
+    "██████ █    █ █    █ █  █ ███ ██████ █ █    █",
+    "█      ██   █ █    █ █ █   █  █    █ █ ██   █",
+    "█      █ █  █ █    █ ██    █  █    █ █ █ █  █",
+    "█      █  █ █ █    █ █ █   █  █    █ █ █  █ █",
+    "██████ █   ██ ██████ █  █ ███ ██████ █ █   ██"
   ];
   
   const gmailAscii = [
-    "█████ █   █   ██   ████ █    ",
-    "█     ██ ██  █  █  █  █ █    ",
-    "█ ██  █ █ █ ██████ █  █ █    ",
-    "█  █  █   █ █    █ █  █ █    ",
-    "█████ █   █ █    █ ████ █████"
+    "██████ █   █    ███    █ █      ",
+    "█      ██  █   █   █   █ █      ",
+    "█  ██  █ █ █  █████████ █      ",
+    "█   █  █  ██  █       █ █      ",
+    "██████ █   █  █       █ ███████"
   ];
   
   const githubAscii = [
-    "█████ ████ █████ █  █ █  █ ████  ",
-    "█     █      █   █  █ █  █ █   █ ",
-    "█ ██  ███    █   ████ ██ █ ████  ",
-    "█  █  █      █   █  █ █ ██ █   █ ",
-    "█████ █      █   █  █ █  █ ████  "
+    "██████ █ ████ █  █ █  █ ██████ ",
+    "█      █   █  █  █ █  █ █    █ ",
+    "█  ███ █   █  ████ █  █ ██████ ",
+    "█    █ █   █  █  █ █  █ █    █ ",
+    "██████ █   █  █  █ ████ ██████ "
   ];
 
   // Initialize canvas
@@ -74,14 +89,15 @@ const CommitHistory = () => {
     canvas.style.height = `${canvasHeight}px`;
     
     // Initialize grid
-    const cellSize = 8;
     const gridWidth = Math.floor(rect.width / cellSize);
     const gridHeight = Math.floor(canvasHeight / cellSize);
     
+    const occupied = Array(gridHeight).fill(0).map(() => Array(gridWidth).fill(false));
     const grid = {
       width: gridWidth,
       height: gridHeight,
-      cells: []
+      cells: [],
+      occupied: occupied
     };
     
     for (let y = 0; y < gridHeight; y++) {
@@ -95,17 +111,34 @@ const CommitHistory = () => {
     
     // Set up logo obstacles
     const canvasWidth = rect.width;
-    // Define logo positions
-    const linkedInX = canvasWidth * 0.1;
-    const gmailX = canvasWidth * 0.4;
-    const githubX = canvasWidth * 0.7;
     
-    // Set up obstacles (simplified for this example)
-    logoObstaclesRef.current = [
-      {x: linkedInX, y: 20, width: 200, height: 50, type: 'linkedin'},
-      {x: gmailX, y: 20, width: 150, height: 50, type: 'gmail'},
-      {x: githubX, y: 20, width: 150, height: 50, type: 'github'}
-    ];
+    // Define logo positions based on grid
+    const gridX1 = Math.floor(gridWidth * 0.15);
+    const gridX2 = Math.floor(gridWidth * 0.45);
+    const gridX3 = Math.floor(gridWidth * 0.75);
+    const gridY = Math.floor(gridHeight * 0.3);
+    
+    // Mark logo areas as occupied
+    markLogoAsOccupied(linkedInAscii, gridX1, gridY, occupied);
+    markLogoAsOccupied(gmailAscii, gridX2, gridY, occupied);
+    markLogoAsOccupied(githubAscii, gridX3, gridY, occupied);
+    
+    // Initialize snake in a valid position
+    const startX = Math.floor(gridWidth / 2);
+    const startY = Math.floor(gridHeight * 0.7);
+    
+    snakeRef.current = {
+      positions: Array(10).fill(0).map((_, i) => ({
+        x: (startX - i) * cellSize, 
+        y: startY * cellSize
+      })),
+      direction: {x: 1, y: 0},
+      nextDirection: {x: 1, y: 0},
+      speed: 1,
+      length: 10,
+      moveCounter: 0,
+      moveDelay: 10
+    };
     
     // Initialize food
     spawnFood();
@@ -119,6 +152,33 @@ const CommitHistory = () => {
       }
     };
   }, [canvasHeight, isMobile]);
+  
+  // Mark logo positions as occupied in the grid
+  const markLogoAsOccupied = (
+    ascii: string[], 
+    startGridX: number, 
+    startGridY: number, 
+    occupied: boolean[][]
+  ) => {
+    for (let y = 0; y < ascii.length; y++) {
+      const row = ascii[y];
+      for (let x = 0; x < row.length; x++) {
+        if (row[x] === '█') {
+          const gridY = startGridY + y;
+          const gridX = startGridX + x;
+          
+          if (
+            gridY >= 0 && 
+            gridY < occupied.length && 
+            gridX >= 0 && 
+            gridX < occupied[0].length
+          ) {
+            occupied[gridY][gridX] = true;
+          }
+        }
+      }
+    }
+  };
   
   // Handle window resize
   useEffect(() => {
@@ -159,32 +219,28 @@ const CommitHistory = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const rect = canvas.getBoundingClientRect();
+    const grid = gridRef.current;
+    const occupied = grid.occupied;
     
-    // Ensure food doesn't spawn inside obstacles
-    let valid = false;
-    let x = 0, y = 0;
+    // Find all unoccupied cells
+    const availableCells = [];
     
-    while (!valid) {
-      x = Math.floor(Math.random() * (rect.width - 10)) + 5;
-      y = Math.floor(Math.random() * (canvasHeight - 10)) + 5;
-      
-      valid = true;
-      // Check against obstacles
-      for (const obstacle of logoObstaclesRef.current) {
-        if (
-          x > obstacle.x && 
-          x < obstacle.x + obstacle.width && 
-          y > obstacle.y && 
-          y < obstacle.y + obstacle.height
-        ) {
-          valid = false;
-          break;
+    for (let y = 0; y < grid.height; y++) {
+      for (let x = 0; x < grid.width; x++) {
+        if (!occupied[y][x]) {
+          availableCells.push({x, y});
         }
       }
     }
     
-    foodRef.current = {x, y};
+    if (availableCells.length === 0) return;
+    
+    // Choose random unoccupied cell
+    const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
+    foodRef.current = {
+      x: randomCell.x * cellSize + cellSize/2,
+      y: randomCell.y * cellSize + cellSize/2
+    };
   };
 
   // Animation function
@@ -204,7 +260,7 @@ const CommitHistory = () => {
     // Draw ASCII logos
     drawAsciiLogos(ctx);
     
-    // Update snake position
+    // Update snake position (grid-based)
     updateSnake();
     
     // Check for collisions
@@ -248,75 +304,122 @@ const CommitHistory = () => {
   // Draw ASCII art logos
   const drawAsciiLogos = (ctx: CanvasRenderingContext2D) => {
     ctx.font = '6px monospace';
-    ctx.fillStyle = 'rgba(74, 255, 145, 0.6)';
+    ctx.fillStyle = 'rgba(74, 255, 145, 0.8)'; // Brighter green color
     
-    for (const obstacle of logoObstaclesRef.current) {
-      let asciiArt: string[] = [];
-      
-      switch (obstacle.type) {
-        case 'linkedin':
-          asciiArt = linkedInAscii;
-          break;
-        case 'gmail':
-          asciiArt = gmailAscii;
-          break;
-        case 'github':
-          asciiArt = githubAscii;
-          break;
-      }
-      
-      for (let i = 0; i < asciiArt.length; i++) {
-        ctx.fillText(asciiArt[i], obstacle.x, obstacle.y + i * 8);
-      }
+    const canvasWidth = ctx.canvas.width / window.devicePixelRatio;
+    const gridWidth = Math.floor(canvasWidth / cellSize);
+    
+    // Calculate positions
+    const gridX1 = Math.floor(gridWidth * 0.15);
+    const gridX2 = Math.floor(gridWidth * 0.45);
+    const gridX3 = Math.floor(gridWidth * 0.75);
+    const gridY = Math.floor((canvasHeight / cellSize) * 0.3);
+    
+    // Draw LinkedIn
+    for (let i = 0; i < linkedInAscii.length; i++) {
+      ctx.fillText(linkedInAscii[i], gridX1 * cellSize, gridY * cellSize + i * 8);
+    }
+    
+    // Draw Gmail
+    for (let i = 0; i < gmailAscii.length; i++) {
+      ctx.fillText(gmailAscii[i], gridX2 * cellSize, gridY * cellSize + i * 8);
+    }
+    
+    // Draw GitHub
+    for (let i = 0; i < githubAscii.length; i++) {
+      ctx.fillText(githubAscii[i], gridX3 * cellSize, gridY * cellSize + i * 8);
     }
   };
   
-  // Update snake position
+  // Update snake position with grid-based movement
   const updateSnake = () => {
     const snake = snakeRef.current;
     const food = foodRef.current;
     
     if (!food) return;
     
-    // Simple AI: Move towards food
+    // Only move snake when counter reaches moveDelay
+    snake.moveCounter++;
+    if (snake.moveCounter < snake.moveDelay) {
+      return;
+    }
+    snake.moveCounter = 0;
+    
+    // Update direction from nextDirection
+    snake.direction = {...snake.nextDirection};
+    
+    // Get head position in grid coordinates
     const head = snake.positions[0];
+    const gridX = Math.floor(head.x / cellSize);
+    const gridY = Math.floor(head.y / cellSize);
     
-    // Calculate direction to food
-    let dx = food.x - head.x;
-    let dy = food.y - head.y;
+    // Calculate new head position in grid coordinates
+    const newGridX = gridX + snake.direction.x;
+    const newGridY = gridY + snake.direction.y;
     
-    // Normalize
-    const length = Math.sqrt(dx * dx + dy * dy);
-    if (length > 0) {
-      dx = dx / length;
-      dy = dy / length;
+    // Check for boundary collisions or obstacles
+    const grid = gridRef.current;
+    if (
+      newGridX < 0 || 
+      newGridX >= grid.width || 
+      newGridY < 0 || 
+      newGridY >= grid.height ||
+      (grid.occupied[newGridY] && grid.occupied[newGridY][newGridX])
+    ) {
+      // Check for alternative directions
+      const alternatives = [
+        {x: 0, y: -1}, // up
+        {x: 1, y: 0},  // right
+        {x: 0, y: 1},  // down
+        {x: -1, y: 0}  // left
+      ];
+      
+      // Filter out the opposite of current direction and occupied cells
+      const validAlternatives = alternatives.filter(dir => {
+        // Skip opposite direction
+        if (dir.x === -snake.direction.x && dir.y === -snake.direction.y) {
+          return false;
+        }
+        
+        const altX = gridX + dir.x;
+        const altY = gridY + dir.y;
+        
+        // Check if the alternative direction is valid
+        return (
+          altX >= 0 && 
+          altX < grid.width && 
+          altY >= 0 && 
+          altY < grid.height && 
+          !(grid.occupied[altY] && grid.occupied[altY][altX])
+        );
+      });
+      
+      if (validAlternatives.length > 0) {
+        // Choose closest direction to food
+        const foodGridX = Math.floor(food.x / cellSize);
+        const foodGridY = Math.floor(food.y / cellSize);
+        
+        validAlternatives.sort((a, b) => {
+          const distA = Math.abs(foodGridX - (gridX + a.x)) + Math.abs(foodGridY - (gridY + a.y));
+          const distB = Math.abs(foodGridX - (gridX + b.x)) + Math.abs(foodGridY - (gridY + b.y));
+          return distA - distB;
+        });
+        
+        // Update direction to the best alternative
+        snake.direction = validAlternatives[0];
+        snake.nextDirection = validAlternatives[0];
+      } else {
+        // No valid moves, try to continue in current direction
+        // This could happen if snake gets trapped
+        return;
+      }
     }
     
-    // Update direction with some smoothing
-    snake.direction.x = 0.9 * snake.direction.x + 0.1 * dx;
-    snake.direction.y = 0.9 * snake.direction.y + 0.1 * dy;
-    
-    // Normalize direction
-    const dirLength = Math.sqrt(snake.direction.x * snake.direction.x + snake.direction.y * snake.direction.y);
-    if (dirLength > 0) {
-      snake.direction.x = snake.direction.x / dirLength;
-      snake.direction.y = snake.direction.y / dirLength;
-    }
-    
-    // Update head position
+    // Calculate new head position
     const newHead = {
-      x: head.x + snake.direction.x * snake.speed,
-      y: head.y + snake.direction.y * snake.speed
+      x: (gridX + snake.direction.x) * cellSize,
+      y: (gridY + snake.direction.y) * cellSize
     };
-    
-    // Check for canvas bounds
-    const canvas = canvasRef.current;
-    if (canvas) {
-      if (newHead.x < 0) newHead.x = canvas.width;
-      if (newHead.x > canvas.width) newHead.x = 0;
-      if (newHead.y < 0) newHead.y = canvasHeight;
-      if (newHead.y > canvasHeight) newHead.y = 0;
-    }
     
     // Update snake positions
     snake.positions.unshift(newHead);
@@ -324,6 +427,120 @@ const CommitHistory = () => {
     // Limit snake length
     while (snake.positions.length > snake.length) {
       snake.positions.pop();
+    }
+    
+    // Update AI for next move
+    updateSnakeAI();
+  };
+  
+  // Update AI for next snake move
+  const updateSnakeAI = () => {
+    const snake = snakeRef.current;
+    const food = foodRef.current;
+    const grid = gridRef.current;
+    
+    if (!food) return;
+    
+    // Get head position in grid coordinates
+    const head = snake.positions[0];
+    const gridX = Math.floor(head.x / cellSize);
+    const gridY = Math.floor(head.y / cellSize);
+    
+    // Get food position in grid coordinates
+    const foodGridX = Math.floor(food.x / cellSize);
+    const foodGridY = Math.floor(food.y / cellSize);
+    
+    // Calculate direction to food
+    const dx = foodGridX - gridX;
+    const dy = foodGridY - gridY;
+    
+    // Determine best move (horizontal or vertical)
+    let bestMove = {x: 0, y: 0};
+    
+    if (Math.abs(dx) > Math.abs(dy)) {
+      // Try horizontal first
+      bestMove = {x: dx > 0 ? 1 : -1, y: 0};
+      
+      // Check if horizontal move is valid
+      const newX = gridX + bestMove.x;
+      const newY = gridY + bestMove.y;
+      
+      if (
+        newX < 0 || 
+        newX >= grid.width || 
+        newY < 0 || 
+        newY >= grid.height || 
+        (grid.occupied[newY] && grid.occupied[newY][newX])
+      ) {
+        // Try vertical instead
+        bestMove = {x: 0, y: dy > 0 ? 1 : -1};
+      }
+    } else {
+      // Try vertical first
+      bestMove = {x: 0, y: dy > 0 ? 1 : -1};
+      
+      // Check if vertical move is valid
+      const newX = gridX + bestMove.x;
+      const newY = gridY + bestMove.y;
+      
+      if (
+        newX < 0 || 
+        newX >= grid.width || 
+        newY < 0 || 
+        newY >= grid.height || 
+        (grid.occupied[newY] && grid.occupied[newY][newX])
+      ) {
+        // Try horizontal instead
+        bestMove = {x: dx > 0 ? 1 : -1, y: 0};
+      }
+    }
+    
+    // Final check if the best move is valid
+    const newX = gridX + bestMove.x;
+    const newY = gridY + bestMove.y;
+    
+    if (
+      newX >= 0 && 
+      newX < grid.width && 
+      newY >= 0 && 
+      newY < grid.height && 
+      !(grid.occupied[newY] && grid.occupied[newY][newX])
+    ) {
+      snake.nextDirection = bestMove;
+    } else {
+      // Try to find any valid move
+      const alternatives = [
+        {x: 0, y: -1}, // up
+        {x: 1, y: 0},  // right
+        {x: 0, y: 1},  // down
+        {x: -1, y: 0}  // left
+      ];
+      
+      // Filter out the opposite of current direction and occupied cells
+      const validAlternatives = alternatives.filter(dir => {
+        // Skip opposite direction
+        if (dir.x === -snake.direction.x && dir.y === -snake.direction.y) {
+          return false;
+        }
+        
+        const altX = gridX + dir.x;
+        const altY = gridY + dir.y;
+        
+        // Check if the alternative direction is valid
+        return (
+          altX >= 0 && 
+          altX < grid.width && 
+          altY >= 0 && 
+          altY < grid.height && 
+          !(grid.occupied[altY] && grid.occupied[altY][altX])
+        );
+      });
+      
+      if (validAlternatives.length > 0) {
+        // Choose random valid direction
+        const randomIndex = Math.floor(Math.random() * validAlternatives.length);
+        snake.nextDirection = validAlternatives[randomIndex];
+      }
     }
   };
   
@@ -334,51 +551,22 @@ const CommitHistory = () => {
     
     if (!food) return;
     
+    // Get head position in grid coordinates
     const head = snake.positions[0];
+    const gridX = Math.floor(head.x / cellSize);
+    const gridY = Math.floor(head.y / cellSize);
+    
+    // Get food position in grid coordinates
+    const foodGridX = Math.floor(food.x / cellSize);
+    const foodGridY = Math.floor(food.y / cellSize);
     
     // Check food collision
-    const dx = head.x - food.x;
-    const dy = head.y - food.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    if (distance < 10) {
+    if (gridX === foodGridX && gridY === foodGridY) {
       // Grow snake
       snake.length += 1;
       
       // Spawn new food
       spawnFood();
-    }
-    
-    // Simple obstacle avoidance
-    for (const obstacle of logoObstaclesRef.current) {
-      if (
-        head.x > obstacle.x - 10 && 
-        head.x < obstacle.x + obstacle.width + 10 && 
-        head.y > obstacle.y - 10 && 
-        head.y < obstacle.y + obstacle.height + 10
-      ) {
-        // Determine avoidance direction
-        const centerX = obstacle.x + obstacle.width / 2;
-        const centerY = obstacle.y + obstacle.height / 2;
-        
-        const avoidX = head.x - centerX;
-        const avoidY = head.y - centerY;
-        
-        const avoidLength = Math.sqrt(avoidX * avoidX + avoidY * avoidY);
-        
-        if (avoidLength > 0) {
-          // Add avoidance vector to direction
-          snake.direction.x += (avoidX / avoidLength) * 0.5;
-          snake.direction.y += (avoidY / avoidLength) * 0.5;
-          
-          // Normalize
-          const dirLength = Math.sqrt(snake.direction.x * snake.direction.x + snake.direction.y * snake.direction.y);
-          if (dirLength > 0) {
-            snake.direction.x = snake.direction.x / dirLength;
-            snake.direction.y = snake.direction.y / dirLength;
-          }
-        }
-      }
     }
   };
   
@@ -386,24 +574,22 @@ const CommitHistory = () => {
   const drawSnake = (ctx: CanvasRenderingContext2D) => {
     const snake = snakeRef.current;
     
-    // Draw snake body
-    ctx.strokeStyle = '#4AFF91';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(snake.positions[0].x, snake.positions[0].y);
+    // Draw snake segments as cells
+    ctx.fillStyle = '#4AFF91';
     
-    for (let i = 1; i < snake.positions.length; i++) {
+    for (let i = 0; i < snake.positions.length; i++) {
       const p = snake.positions[i];
-      ctx.lineTo(p.x, p.y);
+      
+      if (i === 0) {
+        // Head
+        ctx.fillStyle = '#9C27B0';
+      } else {
+        // Body
+        ctx.fillStyle = '#4AFF91';
+      }
+      
+      ctx.fillRect(p.x, p.y, cellSize, cellSize);
     }
-    
-    ctx.stroke();
-    
-    // Draw snake head
-    ctx.fillStyle = '#9C27B0';
-    ctx.beginPath();
-    ctx.arc(snake.positions[0].x, snake.positions[0].y, 4, 0, Math.PI * 2);
-    ctx.fill();
   };
   
   // Draw food
@@ -413,7 +599,7 @@ const CommitHistory = () => {
     
     ctx.fillStyle = '#E53935';
     ctx.beginPath();
-    ctx.arc(food.x, food.y, 5, 0, Math.PI * 2);
+    ctx.arc(food.x, food.y, cellSize/2, 0, Math.PI * 2);
     ctx.fill();
     
     // Add glow effect
@@ -421,7 +607,7 @@ const CommitHistory = () => {
     ctx.shadowColor = '#E53935';
     ctx.shadowBlur = glowSize;
     ctx.beginPath();
-    ctx.arc(food.x, food.y, 5, 0, Math.PI * 2);
+    ctx.arc(food.x, food.y, cellSize/2, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
   };
@@ -444,7 +630,7 @@ const CommitHistory = () => {
           className="w-full h-full cursor-pointer"
           height={canvasHeight}
           onClick={toggleAnimation}
-          aria-label="Interactive commit history with snake animation"
+          aria-label="Interactive snake game with social media links"
           role="img"
         />
       </div>

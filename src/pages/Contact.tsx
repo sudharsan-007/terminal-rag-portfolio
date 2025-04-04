@@ -50,7 +50,7 @@ const Contact = () => {
             className="terminal-window p-4"
           >
             <h2 className="text-xl text-terminal-text mb-4 border-b border-terminal-text/30 pb-2">
-              <span className="terminal-prompt">Contribution Timeline</span>
+              <span className="terminal-prompt">Connect with me on</span>
             </h2>
             <CommitHistory />
           </motion.div>
