@@ -15,7 +15,7 @@ interface BlogCardProps {
 
 const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode, isSelected = false, onClick }) => {
   const cardClassName = `terminal-window hover:border-terminal-accent1 transition-colors duration-300 cursor-pointer ${
-    isSelected ? 'bg-terminal-navy border border-terminal-accent1' : 'bg-terminal-navy/60 hover:bg-terminal-navy'
+    isSelected ? 'bg-terminal-navy border border-terminal-text' : 'bg-terminal-navy/60 hover:bg-terminal-navy'
   }`;
 
   if (viewMode === 'list') {
@@ -41,7 +41,13 @@ const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode, isSelected = false,
             
             <CardContent className="py-2 flex-grow">
               <p className="text-terminal-text/90 mb-3">{post.excerpt}</p>
-              <BlogTags tags={post.tags.slice(0, 3)} />
+              <div className="flex flex-wrap gap-2">
+                {post.tags.slice(0, 3).map((tag, idx) => (
+                  <span key={idx} className="text-xs px-2 py-1 rounded bg-terminal-text/10 text-terminal-text">
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </CardContent>
             
             <CardFooter className="py-2 border-t border-terminal-text/20 flex justify-between">
@@ -84,7 +90,13 @@ const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode, isSelected = false,
       
       <CardContent className="pb-2 flex-grow">
         <p className="text-terminal-text/90 mb-3">{post.excerpt}</p>
-        <BlogTags tags={post.tags.slice(0, 3)} />
+        <div className="flex flex-wrap gap-2">
+          {post.tags.slice(0, 3).map((tag, idx) => (
+            <span key={idx} className="text-xs px-2 py-1 rounded bg-terminal-text/10 text-terminal-text">
+              {tag}
+            </span>
+          ))}
+        </div>
       </CardContent>
       
       <CardFooter className="flex justify-between text-xs text-terminal-text/70 pt-2 border-t border-terminal-text/20">

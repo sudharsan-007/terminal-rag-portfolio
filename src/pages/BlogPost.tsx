@@ -68,10 +68,12 @@ const BlogPost: React.FC = () => {
             <ArrowLeft size={20} className="mr-2" />
             Back to all posts
           </Link>
-          <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs flex items-center gap-1">
-            <span className="font-mono">ESC</span>
-            <span>Return to blog list</span>
-          </div>
+          <button 
+            onClick={() => navigate('/blog')}
+            className="px-4 py-2 border border-terminal-text text-terminal-text rounded hover:bg-terminal-text/10"
+          >
+            [ESC] Close
+          </button>
         </div>
         
         <article className="terminal-window overflow-visible p-6 md:p-8">
@@ -144,6 +146,15 @@ const BlogPost: React.FC = () => {
             </div>
           </section>
         )}
+        
+        {/* Navigation help similar to Projects page */}
+        <div className="mt-8 border-t border-terminal-text/30 pt-4 text-terminal-text/70 text-sm">
+          <div className="flex justify-between">
+            <div>↑/↓: Navigate related posts</div>
+            <div>Enter: Open post</div>
+            <div>ESC: Return to blog list</div>
+          </div>
+        </div>
       </main>
 
       <Footer />
@@ -152,4 +163,3 @@ const BlogPost: React.FC = () => {
 };
 
 export default BlogPost;
-
