@@ -10,8 +10,8 @@ interface ViewModeToggleProps {
 
 const ViewModeToggle: React.FC<ViewModeToggleProps> = ({ viewMode, setViewMode }) => {
   return (
-    <div className="px-4 py-2 border border-terminal-text text-terminal-text rounded hover:bg-terminal-text/10 flex items-center gap-2">
-      <span>{viewMode === 'grid' ? 'Grid View' : 'List View'}</span>
+    <div className="h-10 px-4 border border-terminal-text text-terminal-text rounded hover:bg-terminal-text/10 flex items-center gap-2 whitespace-nowrap">
+      <span>{viewMode === 'grid' ? 'Grid' : 'List'} View</span>
       <span className="font-mono">(V)</span>
       
       <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'grid' | 'list')}>

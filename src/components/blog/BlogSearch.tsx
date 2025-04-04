@@ -24,7 +24,7 @@ const BlogSearch: React.FC<BlogSearchProps> = ({
           ref={searchInputRef}
           type="text"
           placeholder="Search by title, content, or tags... (Press '/' to focus)"
-          className="terminal-input pl-10 border border-terminal-text/30 rounded-md w-full bg-terminal-navy/30"
+          className="terminal-input h-10 pl-10 border border-terminal-text/30 rounded-md w-full bg-terminal-navy/30"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
