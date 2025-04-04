@@ -15,7 +15,7 @@ interface BlogCardProps {
 
 const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode, isSelected = false, onClick }) => {
   const cardClassName = `terminal-window hover:border-terminal-accent1 transition-colors duration-300 cursor-pointer ${
-    isSelected ? 'bg-terminal-navy border border-terminal-text' : 'bg-terminal-navy/60 hover:bg-terminal-navy'
+    isSelected ? 'bg-terminal-navy border border-terminal-accent1' : 'bg-terminal-navy/60 hover:bg-terminal-navy'
   }`;
 
   if (viewMode === 'list') {

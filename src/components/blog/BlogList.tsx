@@ -39,7 +39,6 @@ const BlogList: React.FC<BlogListProps> = ({
             <div 
               key={post.id} 
               id={`blog-post-${index}`}
-              className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 border border-terminal-accent1' : ''}`}
               onClick={() => setSelectedPostIndex(index)}
             >
               <BlogCard 
@@ -57,7 +56,6 @@ const BlogList: React.FC<BlogListProps> = ({
             <div 
               key={post.id} 
               id={`blog-post-${index}`}
-              className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 border border-terminal-accent1' : ''}`}
               onClick={() => setSelectedPostIndex(index)}
             >
               <BlogCard 
