@@ -1,43 +1,40 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const CommitHistory = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
-  const canvasHeight = isMobile ? 100 : 150;
-  const [isAnimating, setIsAnimating] = useState(true);
+  const canvasHeight = isMobile ? 150 : 200; // Increased canvas height
   
   // Animation state
+  const [isAnimating, setIsAnimating] = useState(true);
   const animationRef = useRef<number | null>(null);
   
-  // Grid settings
-  const cellSize = 8;
+  // Grid settings - increased cell size for better visibility
+  const cellSize = 16; // Doubled from 8 to 16
   const gridRef = useRef<{
     width: number, 
     height: number, 
-    cells: {x: number, y: number, intensity: number}[],
-    occupied: boolean[][]
+    cells: boolean[][],
+    blockedCells: boolean[][]
   }>({
     width: 0,
     height: 0,
     cells: [],
-    occupied: []
+    blockedCells: []
   });
   
   // Snake settings
   const snakeRef = useRef<{
-    positions: {x: number, y: number}[];
+    body: {x: number, y: number}[];
     direction: {x: number, y: number};
-    speed: number;
-    length: number;
     nextDirection: {x: number, y: number};
     moveCounter: number;
     moveDelay: number;
   }>({
-    positions: [],
+    body: [],
     direction: {x: 1, y: 0},
-    speed: 1,
-    length: 10,
     nextDirection: {x: 1, y: 0},
     moveCounter: 0,
     moveDelay: 10
@@ -56,7 +53,7 @@ const CommitHistory = () => {
     gmail: null
   });
 
-  // Logo positions 
+  // Logo positions and dimensions
   const logoPositionsRef = useRef<{
     github: {x: number, y: number, width: number, height: number},
     linkedin: {x: number, y: number, width: number, height: number},
@@ -112,26 +109,18 @@ const CommitHistory = () => {
     const gridWidth = Math.floor(rect.width / cellSize);
     const gridHeight = Math.floor(canvasHeight / cellSize);
     
-    const occupied = Array(gridHeight).fill(0).map(() => Array(gridWidth).fill(false));
-    const grid = {
+    const cells = Array(gridHeight).fill(0).map(() => Array(gridWidth).fill(false));
+    const blockedCells = Array(gridHeight).fill(0).map(() => Array(gridWidth).fill(false));
+    
+    gridRef.current = {
       width: gridWidth,
       height: gridHeight,
-      cells: [],
-      occupied: occupied
+      cells: cells,
+      blockedCells: blockedCells
     };
     
-    for (let y = 0; y < gridHeight; y++) {
-      for (let x = 0; x < gridWidth; x++) {
-        const intensity = Math.random() * 0.5;
-        grid.cells.push({x: x * cellSize, y: y * cellSize, intensity});
-      }
-    }
-    
-    gridRef.current = grid;
-    
-    // Calculate logo positions
-    // Define logo size - make it more appropriate
-    const logoSize = Math.min(gridHeight * 0.6, 40) * cellSize;
+    // Calculate logo positions and dimensions
+    const logoSize = Math.min(80, rect.width / 5);  // Fixed size for logos
     
     // Calculate positions to evenly space logos
     const totalWidth = rect.width;
@@ -169,22 +158,21 @@ const CommitHistory = () => {
       }
     };
     
-    // Mark logo areas as occupied
-    markLogoAreasAsOccupied(occupied, logoPositionsRef.current);
+    // Mark logo areas as blocked
+    markLogoAreasAsBlocked();
     
-    // Initialize snake in a valid position
+    // Initialize snake position
     const startX = Math.floor(gridWidth / 2);
     const startY = Math.floor(gridHeight * 0.8);
     
     snakeRef.current = {
-      positions: Array(10).fill(0).map((_, i) => ({
-        x: (startX - i) * cellSize, 
-        y: startY * cellSize
-      })),
+      body: [
+        {x: startX, y: startY},
+        {x: startX - 1, y: startY},
+        {x: startX - 2, y: startY}
+      ],
       direction: {x: 1, y: 0},
       nextDirection: {x: 1, y: 0},
-      speed: 1,
-      length: 10,
       moveCounter: 0,
       moveDelay: 10
     };
@@ -202,26 +190,26 @@ const CommitHistory = () => {
     };
   }, [canvasHeight, isMobile]);
   
-  // Mark logo positions as occupied in the grid
-  const markLogoAreasAsOccupied = (
-    occupied: boolean[][], 
-    logoPositions: typeof logoPositionsRef.current
-  ) => {
-    const markArea = (startX: number, startY: number, width: number, height: number) => {
-      const startGridX = Math.floor(startX / cellSize);
-      const startGridY = Math.floor(startY / cellSize);
-      const endGridX = Math.floor((startX + width) / cellSize);
-      const endGridY = Math.floor((startY + height) / cellSize);
+  // Mark logo positions as blocked in the grid
+  const markLogoAreasAsBlocked = () => {
+    const grid = gridRef.current;
+    const logoPositions = logoPositionsRef.current;
+    
+    const markArea = (x: number, y: number, width: number, height: number) => {
+      const startGridX = Math.floor(x / cellSize);
+      const startGridY = Math.floor(y / cellSize);
+      const endGridX = Math.ceil((x + width) / cellSize);
+      const endGridY = Math.ceil((y + height) / cellSize);
       
       for (let y = startGridY; y <= endGridY; y++) {
         for (let x = startGridX; x <= endGridX; x++) {
           if (
             y >= 0 && 
-            y < occupied.length && 
+            y < grid.height && 
             x >= 0 && 
-            x < occupied[0].length
+            x < grid.width
           ) {
-            occupied[y][x] = true;
+            grid.blockedCells[y][x] = true;
           }
         }
       }
@@ -286,18 +274,19 @@ const CommitHistory = () => {
 
   // Function to spawn food at random position
   const spawnFood = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
     const grid = gridRef.current;
-    const occupied = grid.occupied;
     
-    // Find all unoccupied cells
+    // Find all available cells (not blocked and not occupied by snake)
     const availableCells = [];
+    
+    const snake = snakeRef.current;
+    const snakePositions = new Set(
+      snake.body.map(pos => `${pos.x},${pos.y}`)
+    );
     
     for (let y = 0; y < grid.height; y++) {
       for (let x = 0; x < grid.width; x++) {
-        if (!occupied[y][x]) {
+        if (!grid.blockedCells[y][x] && !snakePositions.has(`${x},${y}`)) {
           availableCells.push({x, y});
         }
       }
@@ -305,14 +294,23 @@ const CommitHistory = () => {
     
     if (availableCells.length === 0) return;
     
-    // Choose random unoccupied cell
+    // Choose random available cell
     const randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
     foodRef.current = {
-      x: randomCell.x * cellSize + cellSize/2,
-      y: randomCell.y * cellSize + cellSize/2
+      x: randomCell.x,
+      y: randomCell.y
     };
   };
 
+  const startAnimation = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    
+    setIsAnimating(true);
+    animationRef.current = requestAnimationFrame(animate);
+  };
+  
   // Animation function
   const animate = () => {
     const canvas = canvasRef.current;
@@ -321,20 +319,16 @@ const CommitHistory = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    const rect = canvas.getBoundingClientRect();
-    ctx.clearRect(0, 0, rect.width, canvasHeight);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Draw grid
-    drawCommitGrid(ctx);
+    drawGrid(ctx);
     
     // Draw logos
     drawLogos(ctx);
     
-    // Update snake position (grid-based)
+    // Update snake position
     updateSnake();
-    
-    // Check for collisions
-    checkCollisions();
     
     // Draw snake
     drawSnake(ctx);
@@ -346,28 +340,29 @@ const CommitHistory = () => {
     animationRef.current = requestAnimationFrame(animate);
   };
   
-  const startAnimation = () => {
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
-    
-    setIsAnimating(true);
-    animationRef.current = requestAnimationFrame(animate);
-  };
-  
-  // Draw commit grid
-  const drawCommitGrid = (ctx: CanvasRenderingContext2D) => {
+  // Draw grid
+  const drawGrid = (ctx: CanvasRenderingContext2D) => {
     const grid = gridRef.current;
     
-    ctx.fillStyle = 'rgba(74, 255, 145, 0.1)';
     ctx.strokeStyle = 'rgba(74, 255, 145, 0.2)';
     ctx.lineWidth = 0.5;
     
-    for (const cell of grid.cells) {
-      ctx.globalAlpha = cell.intensity;
-      ctx.fillRect(cell.x, cell.y, 6, 6);
-      ctx.globalAlpha = 1;
-      ctx.strokeRect(cell.x, cell.y, 6, 6);
+    // Draw grid cells
+    for (let y = 0; y < grid.height; y++) {
+      for (let x = 0; x < grid.width; x++) {
+        // Skip drawing grid cells where logos will be placed
+        if (grid.blockedCells[y][x]) continue;
+        
+        // Alternate pattern for better visibility
+        if ((x + y) % 2 === 0) {
+          ctx.fillStyle = 'rgba(74, 255, 145, 0.05)';
+        } else {
+          ctx.fillStyle = 'rgba(74, 255, 145, 0.02)';
+        }
+        
+        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+        ctx.strokeRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      }
     }
   };
   
@@ -375,9 +370,6 @@ const CommitHistory = () => {
   const drawLogos = (ctx: CanvasRenderingContext2D) => {
     const logoPositions = logoPositionsRef.current;
     const logos = logoImages.current;
-    
-    // Add a debug rectangle to see logo positions
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     
     // Draw LinkedIn logo
     if (logos.linkedin) {
@@ -413,12 +405,9 @@ const CommitHistory = () => {
     }
   };
   
-  // Update snake position with grid-based movement
+  // Update snake position
   const updateSnake = () => {
     const snake = snakeRef.current;
-    const food = foodRef.current;
-    
-    if (!food) return;
     
     // Only move snake when counter reaches moveDelay
     snake.moveCounter++;
@@ -430,167 +419,24 @@ const CommitHistory = () => {
     // Update direction from nextDirection
     snake.direction = {...snake.nextDirection};
     
-    // Get head position in grid coordinates
-    const head = snake.positions[0];
-    const gridX = Math.floor(head.x / cellSize);
-    const gridY = Math.floor(head.y / cellSize);
-    
-    // Calculate new head position in grid coordinates
-    const newGridX = gridX + snake.direction.x;
-    const newGridY = gridY + snake.direction.y;
-    
-    // Check for boundary collisions or obstacles
-    const grid = gridRef.current;
-    if (
-      newGridX < 0 || 
-      newGridX >= grid.width || 
-      newGridY < 0 || 
-      newGridY >= grid.height ||
-      (grid.occupied[newGridY] && grid.occupied[newGridY][newGridX])
-    ) {
-      // Check for alternative directions
-      const alternatives = [
-        {x: 0, y: -1}, // up
-        {x: 1, y: 0},  // right
-        {x: 0, y: 1},  // down
-        {x: -1, y: 0}  // left
-      ];
-      
-      // Filter out the opposite of current direction and occupied cells
-      const validAlternatives = alternatives.filter(dir => {
-        // Skip opposite direction
-        if (dir.x === -snake.direction.x && dir.y === -snake.direction.y) {
-          return false;
-        }
-        
-        const altX = gridX + dir.x;
-        const altY = gridY + dir.y;
-        
-        // Check if the alternative direction is valid
-        return (
-          altX >= 0 && 
-          altX < grid.width && 
-          altY >= 0 && 
-          altY < grid.height && 
-          !(grid.occupied[altY] && grid.occupied[altY][altX])
-        );
-      });
-      
-      if (validAlternatives.length > 0) {
-        // Choose closest direction to food
-        const foodGridX = Math.floor(food.x / cellSize);
-        const foodGridY = Math.floor(food.y / cellSize);
-        
-        validAlternatives.sort((a, b) => {
-          const distA = Math.abs(foodGridX - (gridX + a.x)) + Math.abs(foodGridY - (gridY + a.y));
-          const distB = Math.abs(foodGridX - (gridX + b.x)) + Math.abs(foodGridY - (gridY + b.y));
-          return distA - distB;
-        });
-        
-        // Update direction to the best alternative
-        snake.direction = validAlternatives[0];
-        snake.nextDirection = validAlternatives[0];
-      } else {
-        // No valid moves, try to continue in current direction
-        // This could happen if snake gets trapped
-        return;
-      }
-    }
-    
     // Calculate new head position
+    const head = snake.body[0];
     const newHead = {
-      x: (gridX + snake.direction.x) * cellSize,
-      y: (gridY + snake.direction.y) * cellSize
+      x: head.x + snake.direction.x,
+      y: head.y + snake.direction.y
     };
     
-    // Update snake positions
-    snake.positions.unshift(newHead);
-    
-    // Limit snake length
-    while (snake.positions.length > snake.length) {
-      snake.positions.pop();
-    }
-    
-    // Update AI for next move
-    updateSnakeAI();
-  };
-  
-  // Update AI for next snake move
-  const updateSnakeAI = () => {
-    const snake = snakeRef.current;
-    const food = foodRef.current;
     const grid = gridRef.current;
     
-    if (!food) return;
-    
-    // Get head position in grid coordinates
-    const head = snake.positions[0];
-    const gridX = Math.floor(head.x / cellSize);
-    const gridY = Math.floor(head.y / cellSize);
-    
-    // Get food position in grid coordinates
-    const foodGridX = Math.floor(food.x / cellSize);
-    const foodGridY = Math.floor(food.y / cellSize);
-    
-    // Calculate direction to food
-    const dx = foodGridX - gridX;
-    const dy = foodGridY - gridY;
-    
-    // Determine best move (horizontal or vertical)
-    let bestMove = {x: 0, y: 0};
-    
-    if (Math.abs(dx) > Math.abs(dy)) {
-      // Try horizontal first
-      bestMove = {x: dx > 0 ? 1 : -1, y: 0};
-      
-      // Check if horizontal move is valid
-      const newX = gridX + bestMove.x;
-      const newY = gridY + bestMove.y;
-      
-      if (
-        newX < 0 || 
-        newX >= grid.width || 
-        newY < 0 || 
-        newY >= grid.height || 
-        (grid.occupied[newY] && grid.occupied[newY][newX])
-      ) {
-        // Try vertical instead
-        bestMove = {x: 0, y: dy > 0 ? 1 : -1};
-      }
-    } else {
-      // Try vertical first
-      bestMove = {x: 0, y: dy > 0 ? 1 : -1};
-      
-      // Check if vertical move is valid
-      const newX = gridX + bestMove.x;
-      const newY = gridY + bestMove.y;
-      
-      if (
-        newX < 0 || 
-        newX >= grid.width || 
-        newY < 0 || 
-        newY >= grid.height || 
-        (grid.occupied[newY] && grid.occupied[newY][newX])
-      ) {
-        // Try horizontal instead
-        bestMove = {x: dx > 0 ? 1 : -1, y: 0};
-      }
-    }
-    
-    // Final check if the best move is valid
-    const newX = gridX + bestMove.x;
-    const newY = gridY + bestMove.y;
-    
+    // Check for collisions with walls or blocked areas
     if (
-      newX >= 0 && 
-      newX < grid.width && 
-      newY >= 0 && 
-      newY < grid.height && 
-      !(grid.occupied[newY] && grid.occupied[newY][newX])
+      newHead.x < 0 || 
+      newHead.x >= grid.width || 
+      newHead.y < 0 || 
+      newHead.y >= grid.height ||
+      grid.blockedCells[newHead.y][newHead.x]
     ) {
-      snake.nextDirection = bestMove;
-    } else {
-      // Try to find any valid move
+      // Find a valid direction to go
       const alternatives = [
         {x: 0, y: -1}, // up
         {x: 1, y: 0},  // right
@@ -598,15 +444,15 @@ const CommitHistory = () => {
         {x: -1, y: 0}  // left
       ];
       
-      // Filter out the opposite of current direction and occupied cells
+      // Filter out the opposite of current direction and blocked cells
       const validAlternatives = alternatives.filter(dir => {
         // Skip opposite direction
         if (dir.x === -snake.direction.x && dir.y === -snake.direction.y) {
           return false;
         }
         
-        const altX = gridX + dir.x;
-        const altY = gridY + dir.y;
+        const altX = head.x + dir.x;
+        const altY = head.y + dir.y;
         
         // Check if the alternative direction is valid
         return (
@@ -614,41 +460,145 @@ const CommitHistory = () => {
           altX < grid.width && 
           altY >= 0 && 
           altY < grid.height && 
-          !(grid.occupied[altY] && grid.occupied[altY][altX])
+          !grid.blockedCells[altY][altX]
         );
       });
       
       if (validAlternatives.length > 0) {
         // Choose random valid direction
         const randomIndex = Math.floor(Math.random() * validAlternatives.length);
+        snake.direction = validAlternatives[randomIndex];
         snake.nextDirection = validAlternatives[randomIndex];
+        
+        // Recalculate new head
+        newHead.x = head.x + snake.direction.x;
+        newHead.y = head.y + snake.direction.y;
+      } else {
+        // No valid moves, try to continue in current direction
+        return;
       }
     }
+    
+    // Check for collision with food
+    const food = foodRef.current;
+    let ate = false;
+    
+    if (food && newHead.x === food.x && newHead.y === food.y) {
+      ate = true;
+      spawnFood();
+    }
+    
+    // Update snake body
+    snake.body.unshift(newHead);
+    
+    // Remove tail if didn't eat
+    if (!ate) {
+      snake.body.pop();
+    }
+    
+    // Update direction for next move based on food position
+    updateSnakeDirection();
   };
   
-  // Check for collisions
-  const checkCollisions = () => {
+  // Update snake direction based on food position
+  const updateSnakeDirection = () => {
     const snake = snakeRef.current;
     const food = foodRef.current;
     
     if (!food) return;
     
-    // Get head position in grid coordinates
-    const head = snake.positions[0];
-    const gridX = Math.floor(head.x / cellSize);
-    const gridY = Math.floor(head.y / cellSize);
+    const head = snake.body[0];
     
-    // Get food position in grid coordinates
-    const foodGridX = Math.floor(food.x / cellSize);
-    const foodGridY = Math.floor(food.y / cellSize);
+    // Calculate direction to food
+    const dx = food.x - head.x;
+    const dy = food.y - head.y;
     
-    // Check food collision
-    if (gridX === foodGridX && gridY === foodGridY) {
-      // Grow snake
-      snake.length += 1;
+    // Determine best move (horizontal or vertical)
+    let bestMove = {x: 0, y: 0};
+    
+    // Try to move horizontally or vertically toward food
+    if (Math.abs(dx) > Math.abs(dy)) {
+      // Try horizontal first
+      bestMove = {x: dx > 0 ? 1 : dx < 0 ? -1 : 0, y: 0};
       
-      // Spawn new food
-      spawnFood();
+      // Check if the move is valid
+      if (!isValidMove(head.x + bestMove.x, head.y + bestMove.y)) {
+        // Try vertical instead
+        bestMove = {x: 0, y: dy > 0 ? 1 : dy < 0 ? -1 : 0};
+        
+        // If vertical isn't valid either, find any valid move
+        if (!isValidMove(head.x + bestMove.x, head.y + bestMove.y)) {
+          findAnyValidMove();
+        }
+      }
+    } else {
+      // Try vertical first
+      bestMove = {x: 0, y: dy > 0 ? 1 : dy < 0 ? -1 : 0};
+      
+      // Check if the move is valid
+      if (!isValidMove(head.x + bestMove.x, head.y + bestMove.y)) {
+        // Try horizontal instead
+        bestMove = {x: dx > 0 ? 1 : dx < 0 ? -1 : 0, y: 0};
+        
+        // If horizontal isn't valid either, find any valid move
+        if (!isValidMove(head.x + bestMove.x, head.y + bestMove.y)) {
+          findAnyValidMove();
+        }
+      }
+    }
+    
+    // Set the next direction if it's valid and not opposite of current direction
+    if (
+      isValidMove(head.x + bestMove.x, head.y + bestMove.y) && 
+      !(bestMove.x === -snake.direction.x && bestMove.y === -snake.direction.y)
+    ) {
+      snake.nextDirection = bestMove;
+    }
+  };
+  
+  // Check if a move is valid
+  const isValidMove = (x: number, y: number): boolean => {
+    const grid = gridRef.current;
+    
+    // Check if out of bounds
+    if (x < 0 || x >= grid.width || y < 0 || y >= grid.height) {
+      return false;
+    }
+    
+    // Check if blocked cell
+    if (grid.blockedCells[y][x]) {
+      return false;
+    }
+    
+    return true;
+  };
+  
+  // Find any valid move
+  const findAnyValidMove = () => {
+    const snake = snakeRef.current;
+    const head = snake.body[0];
+    
+    const directions = [
+      {x: 0, y: -1}, // up
+      {x: 1, y: 0},  // right
+      {x: 0, y: 1},  // down
+      {x: -1, y: 0}  // left
+    ];
+    
+    // Filter out the opposite of current direction and invalid moves
+    const validDirections = directions.filter(dir => {
+      // Skip opposite direction
+      if (dir.x === -snake.direction.x && dir.y === -snake.direction.y) {
+        return false;
+      }
+      
+      return isValidMove(head.x + dir.x, head.y + dir.y);
+    });
+    
+    if (validDirections.length > 0) {
+      // Choose random valid direction
+      const randomIndex = Math.floor(Math.random() * validDirections.length);
+      snake.nextDirection = validDirections[randomIndex];
     }
   };
   
@@ -656,11 +606,8 @@ const CommitHistory = () => {
   const drawSnake = (ctx: CanvasRenderingContext2D) => {
     const snake = snakeRef.current;
     
-    // Draw snake segments as cells
-    ctx.fillStyle = '#4AFF91';
-    
-    for (let i = 0; i < snake.positions.length; i++) {
-      const p = snake.positions[i];
+    for (let i = 0; i < snake.body.length; i++) {
+      const segment = snake.body[i];
       
       if (i === 0) {
         // Head
@@ -670,7 +617,22 @@ const CommitHistory = () => {
         ctx.fillStyle = '#4AFF91';
       }
       
-      ctx.fillRect(p.x, p.y, cellSize, cellSize);
+      ctx.fillRect(
+        segment.x * cellSize, 
+        segment.y * cellSize, 
+        cellSize, 
+        cellSize
+      );
+      
+      // Draw outline
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(
+        segment.x * cellSize, 
+        segment.y * cellSize, 
+        cellSize, 
+        cellSize
+      );
     }
   };
   
@@ -679,29 +641,27 @@ const CommitHistory = () => {
     const food = foodRef.current;
     if (!food) return;
     
+    // Draw food as a red square
     ctx.fillStyle = '#E53935';
-    ctx.beginPath();
-    ctx.arc(food.x, food.y, cellSize/2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(
+      food.x * cellSize,
+      food.y * cellSize,
+      cellSize,
+      cellSize
+    );
     
     // Add glow effect
-    const glowSize = 3 + Math.sin(Date.now() * 0.01) * 2;
     ctx.shadowColor = '#E53935';
-    ctx.shadowBlur = glowSize;
-    ctx.beginPath();
-    ctx.arc(food.x, food.y, cellSize/2, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.shadowBlur = 5;
+    ctx.strokeStyle = '#E53935';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(
+      food.x * cellSize,
+      food.y * cellSize,
+      cellSize,
+      cellSize
+    );
     ctx.shadowBlur = 0;
-  };
-
-  // Toggle animation
-  const toggleAnimation = () => {
-    setIsAnimating(!isAnimating);
-    if (!isAnimating) {
-      startAnimation();
-    } else if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
   };
 
   return (
