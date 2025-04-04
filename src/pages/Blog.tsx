@@ -6,11 +6,15 @@ import Footer from '@/components/Footer';
 import { getAllBlogPosts } from '@/data/blogData';
 import BlogCard from '@/components/blog/BlogCard';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Search, LayoutGrid, List } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
+type ViewMode = 'grid' | 'list';
 
 const Blog: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const allPosts = getAllBlogPosts();
   
   const filteredPosts = allPosts.filter(post => {
@@ -48,14 +52,10 @@ const Blog: React.FC = () => {
             <div className="p-6">
               <div className="mb-6">
                 <h1 className="text-3xl md:text-4xl font-bold text-terminal-text mb-4">
-                  <span className="text-terminal-accent1">./</span>
                   blog
                 </h1>
-                <p className="text-terminal-text/80 mb-6">
-                  Exploring the frontiers of machine learning, AI, and beyond.
-                </p>
                 
-                <div className="relative mb-8">
+                <div className="relative mb-4">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-terminal-text/50" size={18} />
                   <Input
                     type="text"
@@ -65,14 +65,40 @@ const Blog: React.FC = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
+                
+                <p className="text-terminal-text/80 mb-5 text-sm">
+                  Exploring the frontiers of machine learning, AI, and beyond.
+                </p>
+                
+                <div className="flex justify-between items-center mb-6">
+                  <div className="text-sm text-terminal-text/70">
+                    {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found
+                  </div>
+                  <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as ViewMode)}>
+                    <ToggleGroupItem value="grid" aria-label="Grid view">
+                      <LayoutGrid size={18} />
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="list" aria-label="List view">
+                      <List size={18} />
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
               </div>
 
               {filteredPosts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredPosts.map((post) => (
-                    <BlogCard key={post.id} post={post} />
-                  ))}
-                </div>
+                viewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredPosts.map((post) => (
+                      <BlogCard key={post.id} post={post} viewMode="grid" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {filteredPosts.map((post) => (
+                      <BlogCard key={post.id} post={post} viewMode="list" />
+                    ))}
+                  </div>
+                )
               ) : (
                 <div className="p-6 text-center">
                   <p className="text-terminal-text">No posts found matching your search.</p>
