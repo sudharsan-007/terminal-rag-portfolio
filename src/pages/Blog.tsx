@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getAllBlogPosts } from '@/data/blogData';
-import BlogCard from '@/components/blog/BlogCard';
-import { Input } from '@/components/ui/input';
-import { Search, LayoutGrid, List } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import BlogList from '@/components/blog/BlogList';
+import BlogSearch from '@/components/blog/BlogSearch';
+import ViewModeToggle from '@/components/blog/ViewModeToggle';
+import KeyboardNavHelp from '@/components/blog/KeyboardNavHelp';
 
 type ViewMode = 'grid' | 'list';
 
@@ -151,10 +151,6 @@ const Blog: React.FC = () => {
     setViewMode(prev => prev === 'grid' ? 'list' : 'grid');
   };
 
-  const handleBlogClick = (slug: string) => {
-    navigate(`/blog/${slug}`);
-  };
-
   return (
     <div className="h-screen flex flex-col bg-terminal-bg overflow-hidden">
       <motion.div 
@@ -175,84 +171,27 @@ const Blog: React.FC = () => {
           <div className="terminal-window flex-grow overflow-auto">
             <div className="p-6">
               <div className="mb-6">
-                <div className="relative mb-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-terminal-text/50" size={18} />
-                  <Input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Search by title, content, or tags... (Press '/' to focus)"
-                    className="terminal-input pl-10 border border-terminal-text/30 rounded-md w-full bg-terminal-navy/30"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
+                <BlogSearch 
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  searchInputRef={searchInputRef}
+                  filteredPostsCount={filteredPosts.length}
+                />
                 
-                <div className="flex justify-between items-center mb-6">
-                  <div className="text-sm text-terminal-text/70">
-                    <span>{filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as ViewMode)}>
-                      <ToggleGroupItem value="grid" aria-label="Grid view">
-                        <LayoutGrid size={18} />
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="list" aria-label="List view">
-                        <List size={18} />
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-
-                    <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs flex items-center gap-1">
-                      <span className="font-mono">V</span>
-                      <span>{viewMode === 'grid' ? 'Grid View' : 'List View'}</span>
-                    </div>
-                  </div>
+                <div className="flex justify-end mb-6">
+                  <ViewModeToggle 
+                    viewMode={viewMode} 
+                    setViewMode={setViewMode}
+                  />
                 </div>
               </div>
 
-              {filteredPosts.length > 0 ? (
-                viewMode === 'grid' ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredPosts.map((post, index) => (
-                      <div 
-                        key={post.id} 
-                        id={`blog-post-${index}`}
-                        className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 border border-terminal-accent1' : ''}`}
-                        onClick={() => setSelectedPostIndex(index)}
-                      >
-                        <BlogCard 
-                          post={post} 
-                          viewMode="grid" 
-                          isSelected={selectedPostIndex === index}
-                          onClick={() => handleBlogClick(post.slug)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    {filteredPosts.map((post, index) => (
-                      <div 
-                        key={post.id} 
-                        id={`blog-post-${index}`}
-                        className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 border border-terminal-accent1' : ''}`}
-                        onClick={() => setSelectedPostIndex(index)}
-                      >
-                        <BlogCard 
-                          post={post} 
-                          viewMode="list" 
-                          isSelected={selectedPostIndex === index}
-                          onClick={() => handleBlogClick(post.slug)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )
-              ) : (
-                <div className="p-6 text-center">
-                  <p className="text-terminal-text">No posts found matching your search.</p>
-                </div>
-              )}
+              <BlogList 
+                posts={filteredPosts}
+                viewMode={viewMode}
+                selectedPostIndex={selectedPostIndex}
+                setSelectedPostIndex={setSelectedPostIndex}
+              />
             </div>
           </div>
         </main>
@@ -263,22 +202,8 @@ const Blog: React.FC = () => {
       {/* Background effects */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
       
-      {/* Keyboard navigation helper - Styled similarly to Projects page */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-terminal-navy/80 border border-terminal-text/30 rounded-lg px-4 py-2 text-xs text-terminal-text/70">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p className="mb-1">↑/↓/←/→: Navigate posts</p>
-            <p>Enter: Open post</p>
-          </div>
-          <div>
-            <p className="mb-1">V: Toggle view mode</p>
-            <p>/: Focus search</p>
-          </div>
-          <div className="md:col-span-2">
-            <p className="mb-1">ESC: Return from search / details</p>
-          </div>
-        </div>
-      </div>
+      {/* Keyboard navigation helper */}
+      <KeyboardNavHelp />
     </div>
   );
 };

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Tag } from 'lucide-react';
 
 interface BlogTagsProps {
   tags: string[];
@@ -12,13 +11,12 @@ const BlogTags: React.FC<BlogTagsProps> = ({ tags }) => {
   return (
     <div className="flex flex-wrap gap-2">
       {tags.map((tag) => (
-        <div 
+        <span 
           key={tag} 
-          className="flex items-center gap-1 py-0.5 px-2 rounded-md bg-terminal-navy border border-terminal-text/30 text-terminal-text text-xs"
+          className="text-xs px-2 py-1 rounded bg-terminal-text/10 text-terminal-text"
         >
-          <Tag size={10} />
-          <span>{tag}</span>
-        </div>
+          {tag}
+        </span>
       ))}
     </div>
   );

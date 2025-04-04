@@ -70,7 +70,7 @@ const BlogPost: React.FC = () => {
         
         <article className="terminal-window overflow-visible p-6 md:p-8">
           <header className="mb-8">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 text-terminal-text">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 text-terminal-accent1">
               {post.title}
             </h1>
             

@@ -34,8 +34,8 @@ const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode, isSelected = false,
           
           <div className={`flex flex-col ${post.coverImage ? 'md:w-3/4' : 'w-full'}`}>
             <CardHeader className="pb-2">
-              <h2 className="text-xl font-bold tracking-tight text-terminal-text hover:text-terminal-accent1">
-                {isSelected && '> '}{post.title}
+              <h2 className="text-xl font-bold tracking-tight text-terminal-accent1 hover:text-terminal-accent1">
+                {isSelected && <span className="text-terminal-accent2">{'> '}</span>}{post.title}
               </h2>
             </CardHeader>
             
@@ -77,8 +77,8 @@ const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode, isSelected = false,
       )}
       
       <CardHeader className="pb-2">
-        <h2 className="text-xl font-bold tracking-tight text-terminal-text hover:text-terminal-accent1">
-          {isSelected && '> '}{post.title}
+        <h2 className="text-xl font-bold tracking-tight text-terminal-accent1 hover:text-terminal-accent1">
+          {isSelected && <span className="text-terminal-accent2">{'> '}</span>}{post.title}
         </h2>
       </CardHeader>
       
