@@ -24,7 +24,7 @@ const Contact = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="terminal-window p-4 h-full"
             >
-              <h2 className="text-xl text-terminal-text mb-4 border-b border-terminal-text/30 pb-2">
+              <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
                 <span className="terminal-prompt">Send Message</span>
               </h2>
               <ContactForm />
@@ -36,7 +36,7 @@ const Contact = () => {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="terminal-window p-4 h-full"
             >
-              <h2 className="text-xl text-terminal-text mb-4 border-b border-terminal-text/30 pb-2">
+              <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
                 <span className="terminal-prompt">Connect on LinkedIn</span>
               </h2>
               <QrCodeDisplay />

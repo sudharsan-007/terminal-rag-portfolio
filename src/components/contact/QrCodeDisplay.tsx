@@ -3,8 +3,6 @@ import React from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// In a real implementation, you would import an actual QR code image
-// For this demo, we'll create a simple representation
 const QrCodeDisplay = () => {
   const handleLinkedInClick = () => {
     window.open('https://linkedin.com/in/yourusername', '_blank');
@@ -12,30 +10,14 @@ const QrCodeDisplay = () => {
   
   return (
     <div className="flex flex-col items-center justify-center h-full">
-      <div className="border-2 border-terminal-text p-4 mb-6 bg-terminal-navy/30 rounded-md relative overflow-hidden">
-        {/* QR Code ASCII Representation */}
-        <div className="text-terminal-text font-mono text-xs leading-none whitespace-pre">
-          {`
-          ██████████████  ██████████████
-          ██          ██  ██          ██
-          ██  ██████  ██  ██  ██████  ██
-          ██  ██████  ██  ██  ██████  ██
-          ██  ██████  ██  ██  ██████  ██
-          ██          ██  ██          ██
-          ██████████████  ██████████████
-                          ██████████████
-          ████████  ██    ██████      ██
-          ██  ████  ██████    ██  ██  ██
-                ██  ██    ████████    ██
-          ██████████████  ██████████  ██
-          ██          ████    ██████████
-          ██  ██████  ██  ██████  ██    
-          ██  ██████  ██████████    ████
-          ██  ██████  ██    ██  ████  ██
-          ██          ██  ██████      ██
-          ██████████████  ██████████████
-          `}
-        </div>
+      <div className="mb-6 rounded-md relative overflow-hidden">
+        <img 
+          src="/lovable-uploads/49610bf5-2f0d-434f-bda5-28df8214d580.png" 
+          alt="LinkedIn QR Code" 
+          className="max-w-full h-auto"
+          width={220}
+          height={220}
+        />
         
         {/* Overlay glow effect */}
         <div className="absolute inset-0 bg-terminal-text/5 glow-effect"></div>
