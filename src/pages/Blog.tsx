@@ -10,6 +10,7 @@ import BlogSearch from '@/components/blog/BlogSearch';
 import ViewModeToggle from '@/components/blog/ViewModeToggle';
 import KeyboardNavHelp from '@/components/blog/KeyboardNavHelp';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type ViewMode = 'grid' | 'list';
 
@@ -21,6 +22,14 @@ const Blog: React.FC = () => {
   const allPosts = getAllBlogPosts();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  
+  // Force list view on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setViewMode('list');
+    }
+  }, [isMobile]);
   
   const filteredPosts = allPosts.filter(post => {
     const searchContent = `${post.title} ${post.excerpt} ${post.tags.join(' ')}`.toLowerCase();
@@ -44,6 +53,9 @@ const Blog: React.FC = () => {
     if (selectedPostIndex >= filteredPosts.length) {
       setSelectedPostIndex(filteredPosts.length > 0 ? 0 : -1);
     }
+    
+    // Skip keyboard navigation setup on mobile
+    if (isMobile) return;
     
     // Set up global keyboard event listener
     const handleKeyDown = (e: globalThis.KeyboardEvent) => {
@@ -93,7 +105,7 @@ const Blog: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [filteredPosts, selectedPostIndex, viewMode, navigate]);
+  }, [filteredPosts, selectedPostIndex, viewMode, navigate, isMobile]);
 
   const navigatePost = (direction: 'up' | 'down' | 'left' | 'right') => {
     if (filteredPosts.length === 0) return;
@@ -179,12 +191,15 @@ const Blog: React.FC = () => {
                 filteredPostsCount={filteredPosts.length}
               />
               
-              <div className="flex justify-end mb-2">
-                <ViewModeToggle 
-                  viewMode={viewMode} 
-                  setViewMode={setViewMode}
-                />
-              </div>
+              {/* Hide view mode toggle on mobile */}
+              {!isMobile && (
+                <div className="flex justify-end mb-2">
+                  <ViewModeToggle 
+                    viewMode={viewMode} 
+                    setViewMode={setViewMode}
+                  />
+                </div>
+              )}
             </div>
             
             {/* Scrollable Blog List */}
@@ -195,6 +210,7 @@ const Blog: React.FC = () => {
                   viewMode={viewMode}
                   selectedPostIndex={selectedPostIndex}
                   setSelectedPostIndex={setSelectedPostIndex}
+                  isMobile={isMobile}
                 />
               </div>
             </ScrollArea>
@@ -207,8 +223,8 @@ const Blog: React.FC = () => {
       {/* Background effects */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
       
-      {/* Keyboard navigation helper */}
-      <KeyboardNavHelp />
+      {/* Only show keyboard navigation help on desktop */}
+      {!isMobile && <KeyboardNavHelp />}
     </div>
   );
 };

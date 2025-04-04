@@ -9,13 +9,15 @@ interface BlogListProps {
   viewMode: 'grid' | 'list';
   selectedPostIndex: number;
   setSelectedPostIndex: (index: number) => void;
+  isMobile?: boolean;
 }
 
 const BlogList: React.FC<BlogListProps> = ({ 
   posts, 
   viewMode, 
   selectedPostIndex, 
-  setSelectedPostIndex 
+  setSelectedPostIndex,
+  isMobile = false
 }) => {
   const navigate = useNavigate();
 
@@ -31,21 +33,32 @@ const BlogList: React.FC<BlogListProps> = ({
     );
   }
 
+  // If on mobile, we disable the selected highlighting and let users tap directly
+  const handleCardSelect = (index: number) => {
+    if (isMobile) {
+      // On mobile, clicking directly navigates to the post
+      handleBlogClick(posts[index].slug);
+    } else {
+      // On desktop, clicking selects the post
+      setSelectedPostIndex(index);
+    }
+  };
+
   return (
     <>
-      {viewMode === 'grid' ? (
+      {viewMode === 'grid' && !isMobile ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post, index) => (
             <div 
               key={post.id} 
               id={`blog-post-${index}`}
-              onClick={() => setSelectedPostIndex(index)}
+              onClick={() => handleCardSelect(index)}
             >
               <BlogCard 
                 post={post} 
                 viewMode="grid" 
-                isSelected={selectedPostIndex === index}
-                onClick={() => handleBlogClick(post.slug)}
+                isSelected={!isMobile && selectedPostIndex === index}
+                onClick={() => isMobile ? handleBlogClick(post.slug) : undefined}
               />
             </div>
           ))}
@@ -56,13 +69,13 @@ const BlogList: React.FC<BlogListProps> = ({
             <div 
               key={post.id} 
               id={`blog-post-${index}`}
-              onClick={() => setSelectedPostIndex(index)}
+              onClick={() => handleCardSelect(index)}
             >
               <BlogCard 
                 post={post} 
                 viewMode="list" 
-                isSelected={selectedPostIndex === index}
-                onClick={() => handleBlogClick(post.slug)}
+                isSelected={!isMobile && selectedPostIndex === index}
+                onClick={() => isMobile ? handleBlogClick(post.slug) : undefined}
               />
             </div>
           ))}
