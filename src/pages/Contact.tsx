@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Layout } from '@/components/Layout';
 import ContactForm from '@/components/contact/ContactForm';
 import QrCodeDisplay from '@/components/contact/QrCodeDisplay';
@@ -50,7 +50,7 @@ const Contact = () => {
             className="terminal-window p-4"
           >
             <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-              <span className="terminal-prompt">Connect with me on</span>
+              <span className="terminal-prompt">Connect with me</span>
             </h2>
             <CommitHistory />
           </motion.div>
