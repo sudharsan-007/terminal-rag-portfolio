@@ -63,10 +63,16 @@ const BlogPost: React.FC = () => {
       <Header />
       
       <main className="flex-grow container mx-auto px-4 py-8">
-        <Link to="/blog" className="inline-flex items-center text-terminal-text hover:text-terminal-accent1 mb-6">
-          <ArrowLeft size={20} className="mr-2" />
-          Back to all posts
-        </Link>
+        <div className="flex items-center gap-4 mb-6">
+          <Link to="/blog" className="inline-flex items-center text-terminal-text hover:text-terminal-accent1">
+            <ArrowLeft size={20} className="mr-2" />
+            Back to all posts
+          </Link>
+          <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs flex items-center gap-1">
+            <span className="font-mono">ESC</span>
+            <span>Return to blog list</span>
+          </div>
+        </div>
         
         <article className="terminal-window overflow-visible p-6 md:p-8">
           <header className="mb-8">
@@ -140,17 +146,10 @@ const BlogPost: React.FC = () => {
         )}
       </main>
 
-      {/* Keyboard navigation helper */}
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-terminal-navy/80 border border-terminal-text/30 rounded-lg px-4 py-2 text-xs text-terminal-text/70 flex gap-3">
-        <div className="flex items-center gap-1">
-          <span className="bg-terminal-text/20 px-1 rounded">ESC</span>
-          <span>Return to blog list</span>
-        </div>
-      </div>
-
       <Footer />
     </div>
   );
 };
 
 export default BlogPost;
+
