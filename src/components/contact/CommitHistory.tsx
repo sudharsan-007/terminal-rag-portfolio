@@ -39,37 +39,58 @@ const CommitHistory = () => {
     direction: {x: 1, y: 0},
     speed: 1,
     length: 10,
-    nextDirection: {x: 1, y: 0}, // Buffer next direction for grid-based movement
+    nextDirection: {x: 1, y: 0},
     moveCounter: 0,
-    moveDelay: 10 // Controls snake speed (higher = slower)
+    moveDelay: 10
   });
   
   const foodRef = useRef<{x: number, y: number} | null>(null);
   
-  // Logo ASCII representations with green color
-  const linkedInAscii = [
-    "██████ █    █ █    █ █  █ ███ ██████ █ █    █",
-    "█      ██   █ █    █ █ █   █  █    █ █ ██   █",
-    "█      █ █  █ █    █ ██    █  █    █ █ █ █  █",
-    "█      █  █ █ █    █ █ █   █  █    █ █ █  █ █",
-    "██████ █   ██ ██████ █  █ ███ ██████ █ █   ██"
-  ];
-  
-  const gmailAscii = [
-    "██████ █   █    ███    █ █      ",
-    "█      ██  █   █   █   █ █      ",
-    "█  ██  █ █ █  █████████ █      ",
-    "█   █  █  ██  █       █ █      ",
-    "██████ █   █  █       █ ███████"
-  ];
-  
-  const githubAscii = [
-    "██████ █ ████ █  █ █  █ ██████ ",
-    "█      █   █  █  █ █  █ █    █ ",
-    "█  ███ █   █  ████ █  █ ██████ ",
-    "█    █ █   █  █  █ █  █ █    █ ",
-    "██████ █   █  █  █ ████ ██████ "
-  ];
+  // Logo images
+  const logoImages = useRef<{
+    github: HTMLImageElement | null,
+    linkedin: HTMLImageElement | null,
+    gmail: HTMLImageElement | null
+  }>({
+    github: null,
+    linkedin: null,
+    gmail: null
+  });
+
+  // Logo positions 
+  const logoPositionsRef = useRef<{
+    github: {x: number, y: number, width: number, height: number},
+    linkedin: {x: number, y: number, width: number, height: number},
+    gmail: {x: number, y: number, width: number, height: number}
+  }>({
+    github: {x: 0, y: 0, width: 0, height: 0},
+    linkedin: {x: 0, y: 0, width: 0, height: 0},
+    gmail: {x: 0, y: 0, width: 0, height: 0}
+  });
+
+  // Load images
+  useEffect(() => {
+    // Load GitHub image
+    const githubImg = new Image();
+    githubImg.src = '/lovable-uploads/ef227435-ba27-49bc-8103-120efe84e5b6.png';
+    githubImg.onload = () => {
+      logoImages.current.github = githubImg;
+    };
+    
+    // Load LinkedIn image
+    const linkedinImg = new Image();
+    linkedinImg.src = '/lovable-uploads/1b304555-55ab-4a66-a403-264060b951f5.png';
+    linkedinImg.onload = () => {
+      logoImages.current.linkedin = linkedinImg;
+    };
+    
+    // Load Gmail image
+    const gmailImg = new Image();
+    gmailImg.src = '/lovable-uploads/3b1b1717-de64-4a3c-88e6-e50aeb30361d.png';
+    gmailImg.onload = () => {
+      logoImages.current.gmail = gmailImg;
+    };
+  }, []);
 
   // Initialize canvas
   useEffect(() => {
@@ -109,23 +130,47 @@ const CommitHistory = () => {
     
     gridRef.current = grid;
     
-    // Set up logo obstacles
-    const canvasWidth = rect.width;
+    // Calculate logo positions
+    const logoSize = Math.min(gridHeight * 0.6, 40) * cellSize;
     
-    // Define logo positions based on grid
-    const gridX1 = Math.floor(gridWidth * 0.15);
-    const gridX2 = Math.floor(gridWidth * 0.45);
-    const gridX3 = Math.floor(gridWidth * 0.75);
-    const gridY = Math.floor(gridHeight * 0.3);
+    // Left position (LinkedIn)
+    const leftX = Math.floor(gridWidth * 0.2);
+    const centerY = Math.floor(gridHeight * 0.5);
+    
+    // Center position (Gmail)
+    const centerX = Math.floor(gridWidth * 0.5);
+    
+    // Right position (GitHub)
+    const rightX = Math.floor(gridWidth * 0.8);
+    
+    // Store logo positions
+    logoPositionsRef.current = {
+      linkedin: {
+        x: leftX * cellSize,
+        y: centerY * cellSize - logoSize/2,
+        width: logoSize,
+        height: logoSize
+      },
+      gmail: {
+        x: centerX * cellSize - logoSize/2,
+        y: centerY * cellSize - logoSize/2,
+        width: logoSize,
+        height: logoSize
+      },
+      github: {
+        x: rightX * cellSize - logoSize,
+        y: centerY * cellSize - logoSize/2,
+        width: logoSize,
+        height: logoSize
+      }
+    };
     
     // Mark logo areas as occupied
-    markLogoAsOccupied(linkedInAscii, gridX1, gridY, occupied);
-    markLogoAsOccupied(gmailAscii, gridX2, gridY, occupied);
-    markLogoAsOccupied(githubAscii, gridX3, gridY, occupied);
+    markLogoAreasAsOccupied(occupied, logoPositionsRef.current);
     
     // Initialize snake in a valid position
     const startX = Math.floor(gridWidth / 2);
-    const startY = Math.floor(gridHeight * 0.7);
+    const startY = Math.floor(gridHeight * 0.8);
     
     snakeRef.current = {
       positions: Array(10).fill(0).map((_, i) => ({
@@ -154,30 +199,51 @@ const CommitHistory = () => {
   }, [canvasHeight, isMobile]);
   
   // Mark logo positions as occupied in the grid
-  const markLogoAsOccupied = (
-    ascii: string[], 
-    startGridX: number, 
-    startGridY: number, 
-    occupied: boolean[][]
+  const markLogoAreasAsOccupied = (
+    occupied: boolean[][], 
+    logoPositions: typeof logoPositionsRef.current
   ) => {
-    for (let y = 0; y < ascii.length; y++) {
-      const row = ascii[y];
-      for (let x = 0; x < row.length; x++) {
-        if (row[x] === '█') {
-          const gridY = startGridY + y;
-          const gridX = startGridX + x;
-          
+    const markArea = (startX: number, startY: number, width: number, height: number) => {
+      const startGridX = Math.floor(startX / cellSize);
+      const startGridY = Math.floor(startY / cellSize);
+      const endGridX = Math.floor((startX + width) / cellSize);
+      const endGridY = Math.floor((startY + height) / cellSize);
+      
+      for (let y = startGridY; y <= endGridY; y++) {
+        for (let x = startGridX; x <= endGridX; x++) {
           if (
-            gridY >= 0 && 
-            gridY < occupied.length && 
-            gridX >= 0 && 
-            gridX < occupied[0].length
+            y >= 0 && 
+            y < occupied.length && 
+            x >= 0 && 
+            x < occupied[0].length
           ) {
-            occupied[gridY][gridX] = true;
+            occupied[y][x] = true;
           }
         }
       }
-    }
+    };
+    
+    // Mark each logo area
+    markArea(
+      logoPositions.linkedin.x, 
+      logoPositions.linkedin.y, 
+      logoPositions.linkedin.width, 
+      logoPositions.linkedin.height
+    );
+    
+    markArea(
+      logoPositions.gmail.x, 
+      logoPositions.gmail.y, 
+      logoPositions.gmail.width, 
+      logoPositions.gmail.height
+    );
+    
+    markArea(
+      logoPositions.github.x, 
+      logoPositions.github.y, 
+      logoPositions.github.width, 
+      logoPositions.github.height
+    );
   };
   
   // Handle window resize
@@ -257,8 +323,8 @@ const CommitHistory = () => {
     // Draw grid
     drawCommitGrid(ctx);
     
-    // Draw ASCII logos
-    drawAsciiLogos(ctx);
+    // Draw logos
+    drawLogos(ctx);
     
     // Update snake position (grid-based)
     updateSnake();
@@ -301,33 +367,42 @@ const CommitHistory = () => {
     }
   };
   
-  // Draw ASCII art logos
-  const drawAsciiLogos = (ctx: CanvasRenderingContext2D) => {
-    ctx.font = '6px monospace';
-    ctx.fillStyle = 'rgba(74, 255, 145, 0.8)'; // Brighter green color
+  // Draw logo images
+  const drawLogos = (ctx: CanvasRenderingContext2D) => {
+    const logoPositions = logoPositionsRef.current;
+    const logos = logoImages.current;
     
-    const canvasWidth = ctx.canvas.width / window.devicePixelRatio;
-    const gridWidth = Math.floor(canvasWidth / cellSize);
-    
-    // Calculate positions
-    const gridX1 = Math.floor(gridWidth * 0.15);
-    const gridX2 = Math.floor(gridWidth * 0.45);
-    const gridX3 = Math.floor(gridWidth * 0.75);
-    const gridY = Math.floor((canvasHeight / cellSize) * 0.3);
-    
-    // Draw LinkedIn
-    for (let i = 0; i < linkedInAscii.length; i++) {
-      ctx.fillText(linkedInAscii[i], gridX1 * cellSize, gridY * cellSize + i * 8);
+    // Draw LinkedIn logo
+    if (logos.linkedin) {
+      ctx.drawImage(
+        logos.linkedin,
+        logoPositions.linkedin.x,
+        logoPositions.linkedin.y,
+        logoPositions.linkedin.width,
+        logoPositions.linkedin.height
+      );
     }
     
-    // Draw Gmail
-    for (let i = 0; i < gmailAscii.length; i++) {
-      ctx.fillText(gmailAscii[i], gridX2 * cellSize, gridY * cellSize + i * 8);
+    // Draw Gmail logo
+    if (logos.gmail) {
+      ctx.drawImage(
+        logos.gmail,
+        logoPositions.gmail.x,
+        logoPositions.gmail.y,
+        logoPositions.gmail.width,
+        logoPositions.gmail.height
+      );
     }
     
-    // Draw GitHub
-    for (let i = 0; i < githubAscii.length; i++) {
-      ctx.fillText(githubAscii[i], gridX3 * cellSize, gridY * cellSize + i * 8);
+    // Draw GitHub logo
+    if (logos.github) {
+      ctx.drawImage(
+        logos.github,
+        logoPositions.github.x,
+        logoPositions.github.y,
+        logoPositions.github.width,
+        logoPositions.github.height
+      );
     }
   };
   
@@ -633,14 +708,6 @@ const CommitHistory = () => {
           aria-label="Interactive snake game with social media links"
           role="img"
         />
-      </div>
-      <div className="flex justify-between items-center text-xs text-terminal-text/70">
-        <div>LinkedIn</div>
-        <div>Gmail</div>  
-        <div>GitHub</div>
-      </div>
-      <div className="mt-2 text-center text-xs text-terminal-text/50">
-        Click the animation to {isAnimating ? 'pause' : 'resume'}
       </div>
     </div>
   );

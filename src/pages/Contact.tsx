@@ -49,7 +49,7 @@ const Contact = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="terminal-window p-4"
           >
-            <h2 className="text-xl text-terminal-text mb-4 border-b border-terminal-text/30 pb-2">
+            <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
               <span className="terminal-prompt">Connect with me on</span>
             </h2>
             <CommitHistory />
