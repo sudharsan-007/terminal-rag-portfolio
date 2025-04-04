@@ -1,12 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getAllBlogPosts } from '@/data/blogData';
 import BlogCard from '@/components/blog/BlogCard';
 import { Input } from '@/components/ui/input';
-import { Search, LayoutGrid, List } from 'lucide-react';
+import { Search, LayoutGrid, List, ArrowDown, ArrowUp, ArrowLeft, ArrowRight } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type ViewMode = 'grid' | 'list';
@@ -15,12 +16,19 @@ const Blog: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [selectedPostIndex, setSelectedPostIndex] = useState(-1);
   const allPosts = getAllBlogPosts();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
   
   const filteredPosts = allPosts.filter(post => {
     const searchContent = `${post.title} ${post.excerpt} ${post.tags.join(' ')}`.toLowerCase();
     return searchContent.includes(searchQuery.toLowerCase());
   });
+
+  // Calculate grid columns based on view mode
+  const gridColumns = viewMode === 'grid' ? 3 : 1;
+  const postsPerRow = viewMode === 'grid' ? 3 : 1;
 
   useEffect(() => {
     // Simulate loading to add a smooth entrance effect
@@ -30,6 +38,119 @@ const Blog: React.FC = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    // Reset selected post index when filtered posts change
+    if (selectedPostIndex >= filteredPosts.length) {
+      setSelectedPostIndex(filteredPosts.length > 0 ? 0 : -1);
+    }
+    
+    // Set up global keyboard event listener
+    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+      // Skip if focused on input
+      if (document.activeElement?.tagName === 'INPUT') {
+        if (e.key === 'Escape') {
+          searchInputRef.current?.blur();
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          navigatePost('down');
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          navigatePost('up');
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          navigatePost('right');
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          navigatePost('left');
+          break;
+        case 'Enter':
+          if (selectedPostIndex >= 0 && selectedPostIndex < filteredPosts.length) {
+            navigate(`/blog/${filteredPosts[selectedPostIndex].slug}`);
+          }
+          break;
+        case '/':
+          e.preventDefault();
+          searchInputRef.current?.focus();
+          break;
+        case 'v':
+          if (e.ctrlKey || e.metaKey) {
+            // Do not switch view mode on paste
+            return;
+          }
+          toggleViewMode();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [filteredPosts, selectedPostIndex, viewMode, navigate]);
+
+  const navigatePost = (direction: 'up' | 'down' | 'left' | 'right') => {
+    if (filteredPosts.length === 0) return;
+    
+    // If nothing is selected, select the first item
+    if (selectedPostIndex === -1) {
+      setSelectedPostIndex(0);
+      return;
+    }
+
+    let newIndex = selectedPostIndex;
+    
+    if (viewMode === 'grid') {
+      switch (direction) {
+        case 'up':
+          newIndex = Math.max(0, selectedPostIndex - postsPerRow);
+          break;
+        case 'down':
+          newIndex = Math.min(filteredPosts.length - 1, selectedPostIndex + postsPerRow);
+          break;
+        case 'left':
+          if (selectedPostIndex % postsPerRow !== 0) {
+            newIndex = Math.max(0, selectedPostIndex - 1);
+          }
+          break;
+        case 'right':
+          if ((selectedPostIndex + 1) % postsPerRow !== 0 && selectedPostIndex < filteredPosts.length - 1) {
+            newIndex = selectedPostIndex + 1;
+          }
+          break;
+      }
+    } else {
+      // List view - only up and down work
+      switch (direction) {
+        case 'up':
+        case 'left':
+          newIndex = Math.max(0, selectedPostIndex - 1);
+          break;
+        case 'down':
+        case 'right':
+          newIndex = Math.min(filteredPosts.length - 1, selectedPostIndex + 1);
+          break;
+      }
+    }
+    
+    setSelectedPostIndex(newIndex);
+    
+    // Ensure the element is visible by scrolling to it if needed
+    const element = document.getElementById(`blog-post-${newIndex}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  };
+
+  const toggleViewMode = () => {
+    setViewMode(prev => prev === 'grid' ? 'list' : 'grid');
+  };
 
   return (
     <div className="h-screen flex flex-col bg-terminal-bg overflow-hidden">
@@ -54,8 +175,9 @@ const Blog: React.FC = () => {
                 <div className="relative mb-2">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-terminal-text/50" size={18} />
                   <Input
+                    ref={searchInputRef}
                     type="text"
-                    placeholder="Search by title, content, or tags..."
+                    placeholder="Search by title, content, or tags... (Press '/' to focus)"
                     className="terminal-input pl-10 border border-terminal-text/30 rounded-md w-full bg-terminal-navy/30"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -67,8 +189,14 @@ const Blog: React.FC = () => {
                 </p>
                 
                 <div className="flex justify-between items-center mb-6">
-                  <div className="text-sm text-terminal-text/70">
-                    {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found
+                  <div className="text-sm text-terminal-text/70 flex items-center gap-2">
+                    <span>{filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'} found</span>
+                    <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs">
+                      {viewMode === 'grid' ? 'Grid View (V)' : 'List View (V)'}
+                    </div>
+                    <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs">
+                      Press '/' to search
+                    </div>
                   </div>
                   <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as ViewMode)}>
                     <ToggleGroupItem value="grid" aria-label="Grid view">
@@ -84,14 +212,28 @@ const Blog: React.FC = () => {
               {filteredPosts.length > 0 ? (
                 viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredPosts.map((post) => (
-                      <BlogCard key={post.id} post={post} viewMode="grid" />
+                    {filteredPosts.map((post, index) => (
+                      <div 
+                        key={post.id} 
+                        id={`blog-post-${index}`}
+                        className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 ring-offset-1' : ''}`}
+                        onClick={() => setSelectedPostIndex(index)}
+                      >
+                        <BlogCard post={post} viewMode="grid" />
+                      </div>
                     ))}
                   </div>
                 ) : (
                   <div className="flex flex-col gap-4">
-                    {filteredPosts.map((post) => (
-                      <BlogCard key={post.id} post={post} viewMode="list" />
+                    {filteredPosts.map((post, index) => (
+                      <div 
+                        key={post.id} 
+                        id={`blog-post-${index}`}
+                        className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 ring-offset-1' : ''}`}
+                        onClick={() => setSelectedPostIndex(index)}
+                      >
+                        <BlogCard post={post} viewMode="list" />
+                      </div>
                     ))}
                   </div>
                 )
@@ -109,6 +251,29 @@ const Blog: React.FC = () => {
       
       {/* Background effects */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
+      
+      {/* Keyboard navigation helper */}
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-terminal-navy/80 border border-terminal-text/30 rounded-lg px-4 py-2 text-xs text-terminal-text/70 flex gap-3">
+        <div className="flex items-center gap-1">
+          <span className="bg-terminal-text/20 px-1 rounded">↑</span>
+          <span className="bg-terminal-text/20 px-1 rounded">↓</span>
+          <span className="bg-terminal-text/20 px-1 rounded">←</span>
+          <span className="bg-terminal-text/20 px-1 rounded">→</span>
+          <span>Navigate</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="bg-terminal-text/20 px-1 rounded">Enter</span>
+          <span>Open</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="bg-terminal-text/20 px-1 rounded">V</span>
+          <span>Toggle View</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="bg-terminal-text/20 px-1 rounded">/</span>
+          <span>Search</span>
+        </div>
+      </div>
     </div>
   );
 };
