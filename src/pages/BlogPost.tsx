@@ -131,7 +131,9 @@ const BlogPost: React.FC = () => {
             <h2 className="text-xl font-bold text-terminal-text mb-6">Related Posts</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedPosts.map((relatedPost) => (
-                <BlogCard key={relatedPost.id} post={relatedPost} viewMode="grid" />
+                <div key={relatedPost.id} onClick={() => navigate(`/blog/${relatedPost.slug}`)}>
+                  <BlogCard post={relatedPost} viewMode="grid" />
+                </div>
               ))}
             </div>
           </section>

@@ -9,12 +9,18 @@ import BlogTags from './BlogTags';
 interface BlogCardProps {
   post: BlogPost;
   viewMode: 'grid' | 'list';
+  isSelected?: boolean;
+  onClick?: () => void;
 }
 
-const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode }) => {
+const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode, isSelected = false, onClick }) => {
+  const cardClassName = `terminal-window hover:border-terminal-accent1 transition-colors duration-300 cursor-pointer ${
+    isSelected ? 'bg-terminal-navy border border-terminal-accent1' : 'bg-terminal-navy/60 hover:bg-terminal-navy'
+  }`;
+
   if (viewMode === 'list') {
     return (
-      <Card className="terminal-window hover:border-terminal-accent1 transition-colors duration-300">
+      <Card className={cardClassName} onClick={onClick}>
         <div className="flex flex-col md:flex-row">
           {post.coverImage && (
             <div className="md:w-1/4 h-[180px] md:h-full">
@@ -28,9 +34,9 @@ const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode }) => {
           
           <div className={`flex flex-col ${post.coverImage ? 'md:w-3/4' : 'w-full'}`}>
             <CardHeader className="pb-2">
-              <Link to={`/blog/${post.slug}`} className="text-terminal-text hover:text-terminal-accent1">
-                <h2 className="text-xl font-bold tracking-tight">{post.title}</h2>
-              </Link>
+              <h2 className="text-xl font-bold tracking-tight text-terminal-text hover:text-terminal-accent1">
+                {isSelected && '> '}{post.title}
+              </h2>
             </CardHeader>
             
             <CardContent className="py-2 flex-grow">
@@ -59,7 +65,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode }) => {
   
   // Grid view
   return (
-    <Card className="terminal-window h-full flex flex-col hover:border-terminal-accent1 transition-colors duration-300">
+    <Card className={`${cardClassName} h-full flex flex-col`} onClick={onClick}>
       {post.coverImage && (
         <div className="h-40 w-full">
           <img 
@@ -71,9 +77,9 @@ const BlogCard: React.FC<BlogCardProps> = ({ post, viewMode }) => {
       )}
       
       <CardHeader className="pb-2">
-        <Link to={`/blog/${post.slug}`} className="text-terminal-text hover:text-terminal-accent1">
-          <h2 className="text-xl font-bold tracking-tight">{post.title}</h2>
-        </Link>
+        <h2 className="text-xl font-bold tracking-tight text-terminal-text hover:text-terminal-accent1">
+          {isSelected && '> '}{post.title}
+        </h2>
       </CardHeader>
       
       <CardContent className="pb-2 flex-grow">

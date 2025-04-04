@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -150,6 +151,10 @@ const Blog: React.FC = () => {
     setViewMode(prev => prev === 'grid' ? 'list' : 'grid');
   };
 
+  const handleBlogClick = (slug: string) => {
+    navigate(`/blog/${slug}`);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-terminal-bg overflow-hidden">
       <motion.div 
@@ -188,11 +193,6 @@ const Blog: React.FC = () => {
                   </div>
                   
                   <div className="flex items-center gap-4">
-                    <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs flex items-center gap-1">
-                      <span className="font-mono">V</span>
-                      <span>{viewMode === 'grid' ? 'Grid View' : 'List View'}</span>
-                    </div>
-                    
                     <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as ViewMode)}>
                       <ToggleGroupItem value="grid" aria-label="Grid view">
                         <LayoutGrid size={18} />
@@ -201,6 +201,11 @@ const Blog: React.FC = () => {
                         <List size={18} />
                       </ToggleGroupItem>
                     </ToggleGroup>
+
+                    <div className="bg-terminal-text/20 px-2 py-1 rounded text-xs flex items-center gap-1">
+                      <span className="font-mono">V</span>
+                      <span>{viewMode === 'grid' ? 'Grid View' : 'List View'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -212,10 +217,15 @@ const Blog: React.FC = () => {
                       <div 
                         key={post.id} 
                         id={`blog-post-${index}`}
-                        className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 ring-offset-1' : ''}`}
+                        className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 border border-terminal-accent1' : ''}`}
                         onClick={() => setSelectedPostIndex(index)}
                       >
-                        <BlogCard post={post} viewMode="grid" />
+                        <BlogCard 
+                          post={post} 
+                          viewMode="grid" 
+                          isSelected={selectedPostIndex === index}
+                          onClick={() => handleBlogClick(post.slug)}
+                        />
                       </div>
                     ))}
                   </div>
@@ -225,10 +235,15 @@ const Blog: React.FC = () => {
                       <div 
                         key={post.id} 
                         id={`blog-post-${index}`}
-                        className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 ring-offset-1' : ''}`}
+                        className={`${selectedPostIndex === index ? 'ring-2 ring-terminal-accent1 border border-terminal-accent1' : ''}`}
                         onClick={() => setSelectedPostIndex(index)}
                       >
-                        <BlogCard post={post} viewMode="list" />
+                        <BlogCard 
+                          post={post} 
+                          viewMode="list" 
+                          isSelected={selectedPostIndex === index}
+                          onClick={() => handleBlogClick(post.slug)}
+                        />
                       </div>
                     ))}
                   </div>
