@@ -10,14 +10,11 @@ const Contact = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6">
-        <motion.h1 
-          className="text-3xl md:text-4xl font-bold text-terminal-text mb-8 text-center"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          Contact Terminal
-        </motion.h1>
+        <div className="mb-4">
+          <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
+            sudharsan@portfolio:~/contact
+          </div>
+        </div>
         
         <div className="terminal-window mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
