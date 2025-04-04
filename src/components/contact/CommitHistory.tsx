@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -131,35 +130,40 @@ const CommitHistory = () => {
     gridRef.current = grid;
     
     // Calculate logo positions
+    // Define logo size - make it more appropriate
     const logoSize = Math.min(gridHeight * 0.6, 40) * cellSize;
     
-    // Left position (LinkedIn)
-    const leftX = Math.floor(gridWidth * 0.2);
-    const centerY = Math.floor(gridHeight * 0.5);
+    // Calculate positions to evenly space logos
+    const totalWidth = rect.width;
+    const logoSpacing = totalWidth / 4; // divide into 4 sections for 3 logos
     
-    // Center position (Gmail)
-    const centerX = Math.floor(gridWidth * 0.5);
+    // LinkedIn position (left)
+    const linkedinX = logoSpacing;
+    const centerY = canvasHeight / 2;
     
-    // Right position (GitHub)
-    const rightX = Math.floor(gridWidth * 0.8);
+    // Gmail position (center)
+    const gmailX = logoSpacing * 2;
     
-    // Store logo positions
+    // GitHub position (right)
+    const githubX = logoSpacing * 3;
+    
+    // Store logo positions with proper sizing
     logoPositionsRef.current = {
       linkedin: {
-        x: leftX * cellSize,
-        y: centerY * cellSize - logoSize/2,
+        x: linkedinX - logoSize/2,
+        y: centerY - logoSize/2,
         width: logoSize,
         height: logoSize
       },
       gmail: {
-        x: centerX * cellSize - logoSize/2,
-        y: centerY * cellSize - logoSize/2,
+        x: gmailX - logoSize/2,
+        y: centerY - logoSize/2,
         width: logoSize,
         height: logoSize
       },
       github: {
-        x: rightX * cellSize - logoSize,
-        y: centerY * cellSize - logoSize/2,
+        x: githubX - logoSize/2,
+        y: centerY - logoSize/2,
         width: logoSize,
         height: logoSize
       }
@@ -371,6 +375,9 @@ const CommitHistory = () => {
   const drawLogos = (ctx: CanvasRenderingContext2D) => {
     const logoPositions = logoPositionsRef.current;
     const logos = logoImages.current;
+    
+    // Add a debug rectangle to see logo positions
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     
     // Draw LinkedIn logo
     if (logos.linkedin) {
@@ -704,7 +711,7 @@ const CommitHistory = () => {
           ref={canvasRef} 
           className="w-full h-full cursor-pointer"
           height={canvasHeight}
-          onClick={toggleAnimation}
+          onClick={() => setIsAnimating(!isAnimating)}
           aria-label="Interactive snake game with social media links"
           role="img"
         />
