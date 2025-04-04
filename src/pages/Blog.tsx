@@ -44,7 +44,7 @@ const Blog: React.FC = () => {
         <main className="flex-grow flex flex-col mt-4 mb-8 overflow-hidden">
           <div className="mb-4">
             <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-              sudharsan@portfolio:~/blog
+              blog
             </div>
           </div>
           
@@ -55,7 +55,7 @@ const Blog: React.FC = () => {
                   blog
                 </h1>
                 
-                <div className="relative mb-4">
+                <div className="relative mb-2">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-terminal-text/50" size={18} />
                   <Input
                     type="text"
@@ -66,7 +66,7 @@ const Blog: React.FC = () => {
                   />
                 </div>
                 
-                <p className="text-terminal-text/80 mb-5 text-sm">
+                <p className="text-terminal-text/80 mb-5 text-xs">
                   Exploring the frontiers of machine learning, AI, and beyond.
                 </p>
                 

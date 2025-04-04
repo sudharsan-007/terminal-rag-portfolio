@@ -1,0 +1,68 @@
+
+posts:
+  - id: "1"
+    slug: "vector-databases-similarity-search"
+    title: "Vector Databases: Understanding the Magic of Similarity Search"
+    date: "March 5, 2025"
+    tags: ["AI", "Machine Learning", "Databases", "Vectors"]
+    readingTime: 8
+    coverImage: "/lovable-uploads/9dd8c316-db03-4cf6-a185-7e47d12ffbec.png"
+    contentFile: "vector-databases-similarity-search.md"
+
+  - id: "2"
+    slug: "llm-fine-tuning-techniques"
+    title: "Fine-tuning LLMs: Techniques for Specialized Applications"
+    date: "February 20, 2025"
+    tags: ["LLM", "Fine-tuning", "NLP", "AI"]
+    readingTime: 10
+    contentFile: "llm-fine-tuning-techniques.md"
+
+  - id: "3"
+    slug: "neural-networks-explained"
+    title: "Neural Networks Explained: Beyond the Black Box"
+    date: "January 15, 2025"
+    tags: ["Neural Networks", "Deep Learning", "AI"]
+    coverImage: "/lovable-uploads/38d5efd1-774c-4895-92a4-a3a22e640245.png"
+    readingTime: 12
+    contentFile: "neural-networks-explained.md"
+
+  - id: "4"
+    slug: "transformer-architecture"
+    title: "Understanding Transformer Architecture"
+    date: "December 5, 2024"
+    tags: ["Transformers", "NLP", "Deep Learning"]
+    readingTime: 15
+    contentFile: "transformer-architecture.md"
+
+  - id: "5"
+    slug: "reinforcement-learning-from-human-feedback"
+    title: "RLHF: Aligning AI Systems with Human Values"
+    date: "November 18, 2024"
+    tags: ["RLHF", "AI Alignment", "Reinforcement Learning"]
+    coverImage: "/lovable-uploads/08fccf80-81d4-46a4-ada4-326119159ad8.png"
+    readingTime: 9
+    contentFile: "reinforcement-learning-from-human-feedback.md"
+
+  - id: "6"
+    slug: "embeddings-in-ai"
+    title: "The Power of Embeddings in Modern AI"
+    date: "October 30, 2024"
+    tags: ["Embeddings", "NLP", "Vectors", "Semantic Search"]
+    readingTime: 7
+    contentFile: "embeddings-in-ai.md"
+
+  - id: "7"
+    slug: "multimodal-ai"
+    title: "Multimodal AI: Combining Vision and Language"
+    date: "September 25, 2024"
+    tags: ["Multimodal AI", "Computer Vision", "NLP"]
+    readingTime: 11
+    contentFile: "multimodal-ai.md"
+
+  - id: "8"
+    slug: "ai-compute-efficiency"
+    title: "The Quest for AI Compute Efficiency"
+    date: "August 14, 2024"
+    tags: ["AI Efficiency", "Quantization", "Model Optimization"]
+    readingTime: 8
+    contentFile: "ai-compute-efficiency.md"

@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -10,21 +10,41 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogTags from '@/components/blog/BlogTags';
 import BlogCard from '@/components/blog/BlogCard';
-import { getBlogPostBySlug, getRelatedPosts } from '@/data/blogData';
+import { getBlogPostBySlug, getRelatedPosts, loadFullBlogPost } from '@/data/blogData';
 
 const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const post = getBlogPostBySlug(slug || '');
+  const [post, setPost] = useState(getBlogPostBySlug(slug || ''));
+  const [isLoading, setIsLoading] = useState(true);
   const relatedPosts = post ? getRelatedPosts(post.id) : [];
 
   useEffect(() => {
     if (!post) {
       navigate('/blog');
+      return;
     }
+
+    // Load the full post content when component mounts
+    const loadContent = async () => {
+      setIsLoading(true);
+      try {
+        const fullPost = await loadFullBlogPost(slug || '');
+        if (fullPost) {
+          setPost(fullPost);
+        }
+      } catch (error) {
+        console.error("Error loading blog post content:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadContent();
+    
     // Scroll to top when post changes
     window.scrollTo(0, 0);
-  }, [post, navigate]);
+  }, [slug, navigate, post?.id]);
 
   if (!post) return null;
 
@@ -75,12 +95,24 @@ const BlogPost: React.FC = () => {
           </header>
           
           <div className="prose prose-invert prose-pre:bg-terminal-navy/80 prose-pre:border prose-pre:border-terminal-text/30 prose-pre:rounded-md prose-code:text-terminal-accent1 prose-headings:text-terminal-text prose-a:text-terminal-accent1 hover:prose-a:text-terminal-accent1/80 max-w-none">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeRaw, rehypeHighlight]}
-            >
-              {post.content}
-            </ReactMarkdown>
+            {isLoading ? (
+              <div className="animate-pulse">
+                <div className="h-4 bg-terminal-text/10 rounded w-3/4 mb-4"></div>
+                <div className="h-4 bg-terminal-text/10 rounded w-5/6 mb-4"></div>
+                <div className="h-4 bg-terminal-text/10 rounded w-2/3 mb-4"></div>
+                <div className="h-4 bg-terminal-text/10 rounded w-4/5 mb-8"></div>
+                <div className="h-4 bg-terminal-text/10 rounded w-full mb-2"></div>
+                <div className="h-4 bg-terminal-text/10 rounded w-full mb-2"></div>
+                <div className="h-4 bg-terminal-text/10 rounded w-3/4 mb-4"></div>
+              </div>
+            ) : (
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeHighlight]}
+              >
+                {post.content}
+              </ReactMarkdown>
+            )}
           </div>
         </article>
         
