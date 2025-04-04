@@ -44,17 +44,13 @@ const Blog: React.FC = () => {
         <main className="flex-grow flex flex-col mt-4 mb-8 overflow-hidden">
           <div className="mb-4">
             <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-              blog
+              sudharsan@portfolio:~/blogs
             </div>
           </div>
           
           <div className="terminal-window flex-grow overflow-auto">
             <div className="p-6">
               <div className="mb-6">
-                <h1 className="text-3xl md:text-4xl font-bold text-terminal-text mb-4">
-                  blog
-                </h1>
-                
                 <div className="relative mb-2">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-terminal-text/50" size={18} />
                   <Input
