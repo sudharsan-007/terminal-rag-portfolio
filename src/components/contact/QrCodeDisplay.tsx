@@ -10,17 +10,18 @@ const QrCodeDisplay = () => {
   
   return (
     <div className="flex flex-col items-center justify-center h-full">
-      <div className="mb-6 rounded-md relative overflow-hidden">
-        <img 
-          src="/lovable-uploads/49610bf5-2f0d-434f-bda5-28df8214d580.png" 
-          alt="LinkedIn QR Code" 
-          className="max-w-full h-auto"
-          width={220}
-          height={220}
-        />
-        
-        {/* Overlay glow effect */}
-        <div className="absolute inset-0 bg-terminal-text/5 glow-effect"></div>
+      <div className="mb-6 relative">
+        <div className="relative overflow-hidden rounded-md" style={{ width: '220px', height: '220px' }}>
+          <img 
+            src="/lovable-uploads/97b98287-d221-43f3-af04-ec77e0dbd11e.png" 
+            alt="LinkedIn Logo"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+            style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }}
+          />
+          
+          {/* Overlay glow effect */}
+          <div className="absolute inset-0 bg-terminal-text/5 glow-effect"></div>
+        </div>
       </div>
       
       <Button 

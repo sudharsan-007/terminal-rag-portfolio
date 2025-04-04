@@ -16,6 +16,7 @@ type Logo = {
   position: Position;
   size: number;
   gridCells: Position[];
+  aspectRatio: number;
 };
 
 type Grid = {
@@ -37,12 +38,13 @@ const CommitHistory = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
   
-  const canvasHeight = isMobile ? 200 : 250;
+  const canvasHeight = isMobile ? 250 : 300;
   
   const [isAnimating, setIsAnimating] = useState(true);
   const animationRef = useRef<number | null>(null);
   
-  const cellSize = 20;
+  const cellSize = isMobile ? 22 : 25;
+  
   const gridRef = useRef<Grid>({
     width: 0,
     height: 0,
@@ -69,87 +71,84 @@ const CommitHistory = () => {
       image: null, 
       position: { x: 0, y: 0 },
       size: 0,
-      gridCells: []
+      gridCells: [],
+      aspectRatio: 1
     },
     gmail: { 
       image: null, 
       position: { x: 0, y: 0 },
       size: 0,
-      gridCells: []
+      gridCells: [],
+      aspectRatio: 1
     },
     github: { 
       image: null, 
       position: { x: 0, y: 0 },
       size: 0,
-      gridCells: []
+      gridCells: [],
+      aspectRatio: 1
     }
   });
   
   const pathfindingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const canvasWidthRef = useRef<number>(0);
   
   useEffect(() => {
     const linkedinImg = new Image();
-    linkedinImg.src = '/lovable-uploads/8490464f-e0cb-4e6a-b8b3-2d4554ba04d2.png';
+    linkedinImg.src = '/lovable-uploads/97b98287-d221-43f3-af04-ec77e0dbd11e.png';
     linkedinImg.onload = () => {
       logosRef.current.linkedin.image = linkedinImg;
+      logosRef.current.linkedin.aspectRatio = linkedinImg.width / linkedinImg.height;
+      if (canvasRef.current) {
+        setupCanvas();
+      }
     };
     
     const gmailImg = new Image();
-    gmailImg.src = '/lovable-uploads/96ac3729-a590-4fa0-bc45-b401cae5e1ca.png';
+    gmailImg.src = '/lovable-uploads/67a9ec88-cbf4-46e7-b87b-f82b27e236a8.png';
     gmailImg.onload = () => {
       logosRef.current.gmail.image = gmailImg;
+      logosRef.current.gmail.aspectRatio = gmailImg.width / gmailImg.height;
+      if (canvasRef.current) {
+        setupCanvas();
+      }
     };
     
     const githubImg = new Image();
-    githubImg.src = '/lovable-uploads/c4ad5ec7-a538-42ac-8f50-da3139045046.png';
+    githubImg.src = '/lovable-uploads/ba4ca26b-e5a7-4709-8f7f-64736f257f75.png';
     githubImg.onload = () => {
       logosRef.current.github.image = githubImg;
+      logosRef.current.github.aspectRatio = githubImg.width / githubImg.height;
+      if (canvasRef.current) {
+        setupCanvas();
+      }
     };
     
     return () => {
       if (pathfindingTimeoutRef.current) {
         clearTimeout(pathfindingTimeoutRef.current);
       }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
   }, []);
 
   useEffect(() => {
-    const setupCanvas = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = canvasHeight * dpr;
-      ctx.scale(dpr, dpr);
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${canvasHeight}px`;
-      
-      const gridWidth = Math.floor(rect.width / cellSize);
-      const gridHeight = Math.floor(canvasHeight / cellSize);
-      
-      const blockedCells = Array(gridHeight).fill(0).map(() => Array(gridWidth).fill(false));
-      
-      gridRef.current = {
-        width: gridWidth,
-        height: gridHeight,
-        cellSize,
-        blockedCells
-      };
-      
-      positionLogos(rect.width, canvasHeight);
-      
-      markLogoAreasAsBlocked();
-      
-      initializeSnake(gridWidth, gridHeight);
-      
-      spawnFood();
+    const handleResize = () => {
+      if (canvasRef.current) {
+        setupCanvas();
+      }
     };
     
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [canvasHeight, isMobile, cellSize]);
+
+  useEffect(() => {
     setupCanvas();
     startAnimation();
     
@@ -158,43 +157,86 @@ const CommitHistory = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [canvasHeight, isMobile]);
+  }, [canvasHeight, isMobile, cellSize]);
+  
+  const setupCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = canvasHeight * dpr;
+    ctx.scale(dpr, dpr);
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${canvasHeight}px`;
+    
+    canvasWidthRef.current = rect.width;
+    
+    const gridWidth = Math.floor(rect.width / cellSize);
+    const gridHeight = Math.floor(canvasHeight / cellSize);
+    
+    const blockedCells = Array(gridHeight).fill(0).map(() => Array(gridWidth).fill(false));
+    
+    gridRef.current = {
+      width: gridWidth,
+      height: gridHeight,
+      cellSize,
+      blockedCells
+    };
+    
+    positionLogos(rect.width, canvasHeight);
+    
+    markLogoAreasAsBlocked();
+    
+    initializeSnake(gridWidth, gridHeight);
+    
+    spawnFood();
+  };
   
   const positionLogos = (canvasWidth: number, canvasHeight: number) => {
-    const maxLogoSize = Math.min(80, canvasWidth / 4);
+    const maxLogoSize = Math.min(isMobile ? 60 : 70, canvasWidth / 5);
     
-    const sectionWidth = canvasWidth / 4;
+    const padding = canvasWidth * 0.1;
+    const availableWidth = canvasWidth - (2 * padding);
+    const spaceBetween = availableWidth / 4;
     
-    const centerY = canvasHeight / 2;
+    const centerY = canvasHeight / 2 - maxLogoSize / 2;
     
     logosRef.current.linkedin = {
       ...logosRef.current.linkedin,
       position: { 
-        x: sectionWidth - maxLogoSize / 2, 
-        y: centerY - maxLogoSize / 2
+        x: padding + spaceBetween - maxLogoSize / 2, 
+        y: centerY
       },
       size: maxLogoSize,
-      gridCells: []
+      gridCells: [],
+      aspectRatio: logosRef.current.linkedin.aspectRatio || 1
     };
     
     logosRef.current.gmail = {
       ...logosRef.current.gmail,
       position: { 
-        x: sectionWidth * 2 - maxLogoSize / 2, 
-        y: centerY - maxLogoSize / 2
+        x: padding + (spaceBetween * 2) - maxLogoSize / 2, 
+        y: centerY
       },
       size: maxLogoSize,
-      gridCells: []
+      gridCells: [],
+      aspectRatio: logosRef.current.gmail.aspectRatio || 1
     };
     
     logosRef.current.github = {
       ...logosRef.current.github,
       position: { 
-        x: sectionWidth * 3 - maxLogoSize / 2, 
-        y: centerY - maxLogoSize / 2
+        x: padding + (spaceBetween * 3) - maxLogoSize / 2, 
+        y: centerY
       },
       size: maxLogoSize,
-      gridCells: []
+      gridCells: [],
+      aspectRatio: logosRef.current.github.aspectRatio || 1
     };
   };
 
@@ -207,18 +249,22 @@ const CommitHistory = () => {
     });
     
     const markCells = (logo: Logo) => {
-      const { position, size } = logo;
+      const { position, size, aspectRatio } = logo;
       
-      const startGridX = Math.floor(position.x / cellSize);
-      const startGridY = Math.floor(position.y / cellSize);
-      const endGridX = Math.ceil((position.x + size) / cellSize);
-      const endGridY = Math.ceil((position.y + size) / cellSize);
+      const logoWidth = aspectRatio > 1 ? size : size * aspectRatio;
+      const logoHeight = aspectRatio < 1 ? size : size / aspectRatio;
+      
+      const padding = cellSize;
+      
+      const startGridX = Math.floor((position.x - padding) / cellSize);
+      const startGridY = Math.floor((position.y - padding) / cellSize);
+      const endGridX = Math.ceil((position.x + logoWidth + padding) / cellSize);
+      const endGridY = Math.ceil((position.y + logoHeight + padding) / cellSize);
       
       for (let y = startGridY; y < endGridY; y++) {
         for (let x = startGridX; x < endGridX; x++) {
           if (y >= 0 && y < grid.height && x >= 0 && x < grid.width) {
             grid.blockedCells[y][x] = true;
-            
             logo.gridCells.push({ x, y });
           }
         }
@@ -347,12 +393,17 @@ const CommitHistory = () => {
     
     Object.entries(logos).forEach(([key, logo]) => {
       if (logo.image) {
+        const { position, size, aspectRatio } = logo;
+        
+        const width = aspectRatio > 1 ? size : size * aspectRatio;
+        const height = aspectRatio < 1 ? size : size / aspectRatio;
+        
         ctx.drawImage(
           logo.image,
-          logo.position.x,
-          logo.position.y,
-          logo.size,
-          logo.size
+          position.x,
+          position.y,
+          width,
+          height
         );
       }
     });
