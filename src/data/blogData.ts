@@ -1,8 +1,14 @@
 
 import { BlogPost } from "@/types/blog";
-import yamlConfig from "./blog/config.yaml";
 import fs from 'fs';
 import path from 'path';
+import { parse } from 'yaml';
+
+// Import the YAML content as a string
+import yamlConfigString from './blog/config.yaml?raw';
+
+// Parse the YAML string
+const yamlConfig = parse(yamlConfigString);
 
 // Create a mocked fs function for client-side use
 const readMarkdownFile = (fileName: string): string => {
