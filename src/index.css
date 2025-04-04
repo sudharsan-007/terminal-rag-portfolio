@@ -108,3 +108,87 @@
     box-shadow: 0 0 10px rgba(74, 255, 145, 0.5);
   }
 }
+
+/* Blog post markdown styling */
+.prose {
+  @apply text-terminal-text;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  @apply text-terminal-text font-bold;
+}
+
+.prose h1 {
+  @apply text-2xl md:text-3xl mt-8 mb-4;
+}
+
+.prose h2 {
+  @apply text-xl md:text-2xl mt-8 mb-4;
+}
+
+.prose h3 {
+  @apply text-lg md:text-xl mt-6 mb-3;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+
+.prose ul, 
+.prose ol {
+  @apply pl-6 mb-4;
+}
+
+.prose li {
+  @apply mb-1;
+}
+
+.prose ul > li {
+  @apply list-disc;
+}
+
+.prose ol > li {
+  @apply list-decimal;
+}
+
+.prose img {
+  @apply my-6 rounded-md max-w-full h-auto mx-auto;
+}
+
+.prose code {
+  @apply bg-terminal-navy/50 px-1 py-0.5 rounded text-terminal-accent1;
+}
+
+.prose pre {
+  @apply p-4 mb-4 overflow-x-auto bg-terminal-navy/80 border border-terminal-text/30 rounded;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0 text-sm;
+}
+
+.prose blockquote {
+  @apply pl-4 italic border-l-2 border-terminal-text/50 my-4 text-terminal-text/80;
+}
+
+.prose a {
+  @apply text-terminal-accent1 hover:underline;
+}
+
+.prose table {
+  @apply w-full border-collapse mb-4;
+}
+
+.prose th, 
+.prose td {
+  @apply border border-terminal-text/30 p-2;
+}
+
+.prose th {
+  @apply bg-terminal-navy/80;
+}

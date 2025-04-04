@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, X } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 
 interface NavItem {
   label: string;
@@ -57,15 +57,15 @@ const Header: React.FC = () => {
               <ul className="py-2">
                 {navItems.map((item) => (
                   <li key={item.label} className="block">
-                    <a
-                      href={item.href}
+                    <Link
+                      to={item.href}
                       className={`block py-3 px-4 hover:bg-terminal-text/10 ${
                         isActive(item.href) ? 'text-terminal-accent1' : 'text-terminal-text'
                       }`}
                       onClick={() => setMenuOpen(false)}
                     >
                       {item.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -75,9 +75,9 @@ const Header: React.FC = () => {
       ) : (
         <nav className="flex justify-center gap-4">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.label}
-              href={item.href}
+              to={item.href}
               className={`px-4 py-2 rounded border ${
                 isActive(item.href) 
                   ? 'bg-terminal-accent1 text-white border-terminal-accent1' 
@@ -85,7 +85,7 @@ const Header: React.FC = () => {
               }`}
             >
               [{item.shortcut}] {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
       )}
