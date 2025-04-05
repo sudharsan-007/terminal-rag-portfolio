@@ -40,7 +40,7 @@ const Resume = () => {
           </div>
         </div>
         
-        <div className="terminal-window p-4 h-[80vh]">
+        <div className="terminal-window p-4">
           <div className="flex justify-between items-center mb-4 border-b border-terminal-text/30 pb-2">
             <h2 className="text-xl text-terminal-accent1">
               <span className="terminal-prompt">Collect items to explore my journey</span>
@@ -111,7 +111,7 @@ const Resume = () => {
               
               <Separator className="my-4 bg-terminal-text/20" />
               
-              <div className="overflow-y-auto" style={{ maxHeight: '200px' }}>
+              <div className="overflow-x-auto">
                 <ResumeContent activeSection={activeSection} />
               </div>
             </div>
@@ -160,10 +160,12 @@ const Resume = () => {
           </div>
           
           {showGame && (
-            <ResumeGame 
-              onItemCollect={handleItemCollected} 
-              setShowGame={setShowGame}
-            />
+            <div className="relative h-[300px] border border-terminal-text/30 rounded-md overflow-hidden bg-terminal-navy/30">
+              <ResumeGame 
+                onItemCollect={handleItemCollected} 
+                setShowGame={setShowGame}
+              />
+            </div>
           )}
         </div>
       </div>

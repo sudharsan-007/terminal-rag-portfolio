@@ -12,13 +12,7 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ activeSection }) => {
   if (!activeSection) {
     return (
       <div className="text-terminal-text">
-        <p className="mb-4">Scroll or start the game to explore my professional journey!</p>
-        <p>Collect items to reveal details about my:</p>
-        <ul className="list-disc pl-5 mt-2 space-y-2">
-          <li className="flex items-center"><Briefcase className="w-4 h-4 mr-2 text-blue-500" /> Work Experience</li>
-          <li className="flex items-center"><GraduationCap className="w-4 h-4 mr-2 text-green-500" /> Education</li>
-          <li className="flex items-center"><Award className="w-4 h-4 mr-2 text-yellow-500" /> Awards & Achievements</li>
-        </ul>
+        <p className="text-center text-terminal-text/70">Select an item to view details</p>
       </div>
     );
   }
