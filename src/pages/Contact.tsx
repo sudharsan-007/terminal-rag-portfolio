@@ -16,45 +16,43 @@ const Contact = () => {
           </div>
         </div>
         
-        <div className="terminal-window mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="terminal-window p-4 h-full"
-            >
-              <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-                <span className="terminal-prompt">Send Message</span>
-              </h2>
-              <ContactForm />
-            </motion.div>
-            
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="terminal-window p-4 h-full"
-            >
-              <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-                <span className="terminal-prompt">Connect on LinkedIn</span>
-              </h2>
-              <QrCodeDisplay />
-            </motion.div>
-          </div>
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="terminal-window p-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="terminal-window p-4 h-full"
           >
             <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-              <span className="terminal-prompt">Connect with me</span>
+              <span className="terminal-prompt">Send Message</span>
             </h2>
-            <CommitHistory />
+            <ContactForm />
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="terminal-window p-4 h-full"
+          >
+            <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
+              <span className="terminal-prompt">Connect on LinkedIn</span>
+            </h2>
+            <QrCodeDisplay />
           </motion.div>
         </div>
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="terminal-window p-4"
+        >
+          <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
+            <span className="terminal-prompt">Connect with me</span>
+          </h2>
+          <CommitHistory />
+        </motion.div>
       </div>
     </Layout>
   );
