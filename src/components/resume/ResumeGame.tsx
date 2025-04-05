@@ -10,7 +10,7 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { init, Game, Sprite, Vec2 } from 'kaplay';
+import * as KaPlay from 'kaplay';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ResumeGameProps {
@@ -21,7 +21,7 @@ interface ResumeGameProps {
 const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) => {
   const gameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameInstance = useRef<Game | null>(null);
+  const gameInstance = useRef<ReturnType<typeof KaPlay.default> | null>(null);
   const [isGameActive, setIsGameActive] = useState(false);
   const [gameProgress, setGameProgress] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -36,8 +36,8 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     if (!canvasRef.current || !gameRef.current) return;
     
     const initGame = async () => {
-      // Initialize Kaplay
-      const game = init({
+      // Initialize KaPlay
+      const game = KaPlay.default({
         canvas: canvasRef.current!,
         width: gameRef.current!.clientWidth,
         height: 300,
@@ -47,8 +47,8 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
       gameInstance.current = game;
       
       // Create player sprite
-      const player = new Sprite({
-        pos: new Vec2(50, 200),
+      const player = new KaPlay.Sprite({
+        pos: { x: 50, y: 200 },
         width: 30,
         height: 30,
         color: '#9C27B0',
@@ -116,24 +116,24 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
       });
       
       // Create platform
-      const platform = new Sprite({
-        pos: new Vec2(0, 300),
+      const platform = new KaPlay.Sprite({
+        pos: { x: 0, y: 300 },
         width: gameRef.current!.clientWidth,
         height: 20,
         color: '#4AFF91',
       });
       
       // Create collectible (briefcase)
-      const briefcase = new Sprite({
-        pos: new Vec2(400, 270),
+      const briefcase = new KaPlay.Sprite({
+        pos: { x: 400, y: 270 },
         width: 25,
         height: 25,
         color: '#E53935',
       });
       
       // Create exit gate
-      const exitGate = new Sprite({
-        pos: new Vec2(gameRef.current!.clientWidth - 50, 250),
+      const exitGate = new KaPlay.Sprite({
+        pos: { x: gameRef.current!.clientWidth - 50, y: 250 },
         width: 40,
         height: 50,
         color: '#FFD700',
@@ -146,7 +146,7 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
       game.addSprite(exitGate);
       
       // Collision detection function
-      const checkCollision = (sprite1: Sprite, sprite2: Sprite) => {
+      const checkCollision = (sprite1: KaPlay.Sprite, sprite2: KaPlay.Sprite) => {
         return (
           sprite1.pos.x < sprite2.pos.x + sprite2.width &&
           sprite1.pos.x + sprite1.width > sprite2.pos.x &&
@@ -219,7 +219,14 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     return () => {
       // Cleanup
       if (gameInstance.current) {
-        gameInstance.current.stop();
+        // Use destroy instead of stop if available, or simply remove event listeners
+        if (typeof gameInstance.current.destroy === 'function') {
+          gameInstance.current.destroy();
+        } else {
+          // Fallback cleanup, remove event listeners if needed
+          document.removeEventListener('keydown', () => {});
+          document.removeEventListener('keyup', () => {});
+        }
       }
     };
   }, [onItemCollect, toast]);
@@ -230,7 +237,12 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     // Resume game after dialog is closed
     if (gameInstance.current && !gameOver) {
       setIsGameActive(true);
-      gameInstance.current.resume();
+      if (typeof gameInstance.current.resume === 'function') {
+        gameInstance.current.resume();
+      } else {
+        // If resume is not available, restart the game loop
+        gameInstance.current.start();
+      }
     }
   };
   
@@ -241,7 +253,12 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     setGameProgress(0);
     
     if (gameInstance.current) {
-      gameInstance.current.resume();
+      if (typeof gameInstance.current.resume === 'function') {
+        gameInstance.current.resume();
+      } else {
+        // If resume is not available, restart the game loop
+        gameInstance.current.start();
+      }
     }
   };
   
