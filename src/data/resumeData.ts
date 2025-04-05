@@ -24,7 +24,7 @@ interface Award {
   organization?: string;
   year?: string;
   description?: string;
-  location?: string; // Added location property to the Award interface
+  location?: string;
 }
 
 interface ResumeData {
@@ -123,65 +123,20 @@ const resumeData: ResumeData = {
         "Designed super-capacitor prototype car with stabilized discharge voltage using buck boost converter",
         "Prototyped early detection and external bumper deployment technology in scaled RC car using Arduino and sensors"
       ]
-    },
-    {
-      institution: "The Velammal International School",
-      degree: "Higher Secondary Examination",
-      location: "Chennai, India",
-      period: "April 2015 - March 2017",
-      gpa: "Score: 1005/1200 (83.75%)",
-      achievements: [
-        "PROJECT TRIKE (2016): Built ambitious 3-wheeled vehicle showcased at various expos"
-      ]
-    },
-    {
-      institution: "MES Indian School",
-      degree: "Secondary School Examination",
-      location: "Doha, Qatar",
-      period: "March 2013 - March 2015",
-      gpa: "CGPA: 7.8"
     }
   ],
   awards: [
     {
-      title: "1st place, SAE Technical Paper Presentation",
-      organization: "Society of Automotive Engineers",
-      year: "2020",
-      description: "Regional level recognition for technical innovation and presentation skills."
+      title: "Bouldering",
+      description: "Passionate rock climber who enjoys the problem-solving aspect of bouldering, regularly participating in local climbing competitions."
     },
     {
-      title: "1st place, SVCE INNOVATES 2019",
-      organization: "Sri Venkateswara College of Engineering",
-      year: "2019",
-      description: "Winner at Student's Research Day for innovative engineering solutions."
+      title: "Table Tennis",
+      description: "Avid table tennis player since childhood, competing in college-level tournaments and continuing to play recreationally."
     },
     {
-      title: "1st place, National level Technical Symposium",
-      year: "2019"
-    },
-    {
-      title: "3rd place, Technical Paper Presentation - Tier 3",
-      organization: "SAE Southern Section",
-      year: "2020"
-    },
-    {
-      title: "1st place, Technical Paper Presentation - Tier 2",
-      organization: "SAE Southern Section",
-      year: "2020"
-    },
-    {
-      title: "2nd place, KEC Young Inventors Award",
-      location: "Doha, Qatar"
-    },
-    {
-      title: "1st place, Science Fair",
-      organization: "MES Indian School",
-      location: "Doha, Qatar"
-    },
-    {
-      title: "2nd place, Science Fair",
-      organization: "MES Indian School",
-      location: "Doha, Qatar"
+      title: "Travelling",
+      description: "Enthusiastic world traveler who has visited over 15 countries, with a special interest in experiencing different cultures and cuisines."
     }
   ],
   skills: [
