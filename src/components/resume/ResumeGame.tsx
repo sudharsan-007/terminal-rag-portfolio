@@ -10,7 +10,7 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import * as KaPlay from 'kaplay';
+import kaplay from 'kaplay';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ResumeGameProps {
@@ -18,10 +18,19 @@ interface ResumeGameProps {
   setShowGame: (show: boolean) => void;
 }
 
+interface GameSprite {
+  pos: { x: number; y: number };
+  width: number;
+  height: number;
+  color: string;
+  hidden?: boolean;
+  addComponent?: (component: any) => void;
+}
+
 const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) => {
   const gameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameInstance = useRef<ReturnType<typeof KaPlay.default> | null>(null);
+  const gameInstance = useRef<ReturnType<typeof kaplay> | null>(null);
   const [isGameActive, setIsGameActive] = useState(false);
   const [gameProgress, setGameProgress] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -30,66 +39,197 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
   const [currentItem, setCurrentItem] = useState<any>(null);
   const isMobile = useIsMobile();
   
+  const player = useRef<GameSprite>({
+    pos: { x: 50, y: 200 },
+    width: 30,
+    height: 30,
+    color: '#9C27B0'
+  });
+  
+  const platform = useRef<GameSprite>({
+    pos: { x: 0, y: 300 },
+    width: 800,
+    height: 20,
+    color: '#4AFF91'
+  });
+  
+  const briefcase = useRef<GameSprite>({
+    pos: { x: 400, y: 270 },
+    width: 25,
+    height: 25,
+    color: '#E53935',
+    hidden: false
+  });
+  
+  const exitGate = useRef<GameSprite>({
+    pos: { x: 750, y: 250 },
+    width: 40,
+    height: 50,
+    color: '#FFD700'
+  });
+  
+  const animationFrameRef = useRef<number | null>(null);
+  
   const { toast } = useToast();
+
+  const checkCollision = (sprite1: GameSprite, sprite2: GameSprite) => {
+    if (sprite2.hidden) return false;
+    
+    return (
+      sprite1.pos.x < sprite2.pos.x + sprite2.width &&
+      sprite1.pos.x + sprite1.width > sprite2.pos.x &&
+      sprite1.pos.y < sprite2.pos.y + sprite2.height &&
+      sprite1.pos.y + sprite1.height > sprite2.pos.y
+    );
+  };
+  
+  const updateGame = () => {
+    if (!isGameActive) return;
+    
+    player.current.pos.y += 5;
+    
+    if (player.current.pos.y > 270) {
+      player.current.pos.y = 270;
+    }
+    
+    if (player.current.pos.y + player.current.height >= platform.current.pos.y) {
+      player.current.pos.y = platform.current.pos.y - player.current.height;
+    }
+    
+    if (!briefcase.current.hidden && checkCollision(player.current, briefcase.current)) {
+      briefcase.current.hidden = true;
+      setScore(prev => prev + 1);
+      setGameProgress(50);
+      
+      setIsGameActive(false);
+      
+      const itemDetails = resumeData.experience[0];
+      setCurrentItem({
+        type: 'experience',
+        id: 'experience-0',
+        details: itemDetails
+      });
+      setDialogOpen(true);
+      
+      toast({
+        title: "Item Collected!",
+        description: "You've collected the OrbDoc experience.",
+        duration: 3000
+      });
+      
+      onItemCollect('experience', 'experience-0');
+    }
+    
+    if (briefcase.current.hidden && checkCollision(player.current, exitGate.current)) {
+      setGameOver(true);
+      setIsGameActive(false);
+      
+      setGameProgress(100);
+      
+      toast({
+        title: "Level Complete!",
+        description: "You've completed the OrbDoc experience level.",
+        duration: 5000
+      });
+    }
+    
+    renderGame();
+    
+    if (isGameActive) {
+      animationFrameRef.current = requestAnimationFrame(updateGame);
+    }
+  };
+  
+  const renderGame = () => {
+    if (!canvasRef.current) return;
+    
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.fillStyle = '#0a1929';
+    ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    
+    ctx.fillStyle = platform.current.color;
+    ctx.fillRect(
+      platform.current.pos.x,
+      platform.current.pos.y,
+      platform.current.width,
+      platform.current.height
+    );
+    
+    ctx.fillStyle = player.current.color;
+    ctx.fillRect(
+      player.current.pos.x,
+      player.current.pos.y,
+      player.current.width,
+      player.current.height
+    );
+    
+    if (!briefcase.current.hidden) {
+      ctx.fillStyle = briefcase.current.color;
+      ctx.fillRect(
+        briefcase.current.pos.x,
+        briefcase.current.pos.y,
+        briefcase.current.width,
+        briefcase.current.height
+      );
+    }
+    
+    ctx.fillStyle = exitGate.current.color;
+    ctx.fillRect(
+      exitGate.current.pos.x,
+      exitGate.current.pos.y,
+      exitGate.current.width,
+      exitGate.current.height
+    );
+  };
+  
+  const startGameLoop = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animationFrameRef.current = requestAnimationFrame(updateGame);
+  };
+  
+  const stopGameLoop = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+  };
 
   useEffect(() => {
     if (!canvasRef.current || !gameRef.current) return;
     
     const initGame = async () => {
-      // Initialize KaPlay
-      const game = KaPlay.default({
-        canvas: canvasRef.current!,
-        width: gameRef.current!.clientWidth,
-        height: 300,
-        background: '#0a1929'
-      });
+      canvasRef.current!.width = gameRef.current!.clientWidth;
+      canvasRef.current!.height = 300;
       
-      gameInstance.current = game;
+      platform.current.width = canvasRef.current!.width;
+      exitGate.current.pos.x = canvasRef.current!.width - 50;
       
-      // Create player sprite
-      const player = new KaPlay.Sprite({
-        pos: { x: 50, y: 200 },
-        width: 30,
-        height: 30,
-        color: '#9C27B0',
-      });
+      gameInstance.current = kaplay();
       
-      // Add gravity
-      player.addComponent({
-        name: 'gravity',
-        update: (sprite) => {
-          sprite.pos.y += 5;
-          // Keep player within bounds
-          if (sprite.pos.y > 270) {
-            sprite.pos.y = 270;
-          }
-        }
-      });
-      
-      // Add controls
       let isJumping = false;
       let isCrouching = false;
       
-      document.addEventListener('keydown', (e) => {
+      const handleKeyDown = (e: KeyboardEvent) => {
         if (!isGameActive) return;
         
-        // Move left
         if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
-          player.pos.x -= 5;
+          player.current.pos.x -= 5;
         }
         
-        // Move right
         if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-          player.pos.x += 5;
+          player.current.pos.x += 5;
         }
         
-        // Jump
         if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') && !isJumping) {
           isJumping = true;
           let jumpHeight = 0;
           
           const jumpInterval = setInterval(() => {
-            player.pos.y -= 8;
+            player.current.pos.y -= 8;
             jumpHeight += 8;
             
             if (jumpHeight >= 100) {
@@ -99,172 +239,71 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
           }, 20);
         }
         
-        // Crouch
         if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
           if (!isCrouching) {
             isCrouching = true;
-            player.height = 15;
+            player.current.height = 15;
           }
         }
-      });
-      
-      document.addEventListener('keyup', (e) => {
-        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-          isCrouching = false;
-          player.height = 30;
-        }
-      });
-      
-      // Create platform
-      const platform = new KaPlay.Sprite({
-        pos: { x: 0, y: 300 },
-        width: gameRef.current!.clientWidth,
-        height: 20,
-        color: '#4AFF91',
-      });
-      
-      // Create collectible (briefcase)
-      const briefcase = new KaPlay.Sprite({
-        pos: { x: 400, y: 270 },
-        width: 25,
-        height: 25,
-        color: '#E53935',
-      });
-      
-      // Create exit gate
-      const exitGate = new KaPlay.Sprite({
-        pos: { x: gameRef.current!.clientWidth - 50, y: 250 },
-        width: 40,
-        height: 50,
-        color: '#FFD700',
-      });
-      
-      // Add sprites to game
-      game.addSprite(platform);
-      game.addSprite(player);
-      game.addSprite(briefcase);
-      game.addSprite(exitGate);
-      
-      // Collision detection function
-      const checkCollision = (sprite1: KaPlay.Sprite, sprite2: KaPlay.Sprite) => {
-        return (
-          sprite1.pos.x < sprite2.pos.x + sprite2.width &&
-          sprite1.pos.x + sprite1.width > sprite2.pos.x &&
-          sprite1.pos.y < sprite2.pos.y + sprite2.height &&
-          sprite1.pos.y + sprite1.height > sprite2.pos.y
-        );
       };
       
-      // Update game loop
-      game.onUpdate(() => {
-        if (!isGameActive) return;
-        
-        // Check for briefcase collection
-        if (!briefcase.hidden && checkCollision(player, briefcase)) {
-          briefcase.hidden = true;
-          setScore(prev => prev + 1);
-          setGameProgress(50);
-          
-          // Pause game and show dialog
-          isGameActive && setIsGameActive(false);
-          game.pause();
-          
-          // Show collected item dialog
-          const itemDetails = resumeData.experience[0]; // OrbDoc experience
-          setCurrentItem({
-            type: 'experience',
-            id: 'experience-0',
-            details: itemDetails
-          });
-          setDialogOpen(true);
-          
-          // Notify with toast
-          toast({
-            title: "Item Collected!",
-            description: "You've collected the OrbDoc experience.",
-            duration: 3000
-          });
-          
-          // Update parent component
-          onItemCollect('experience', 'experience-0');
+      const handleKeyUp = (e: KeyboardEvent) => {
+        if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+          isCrouching = false;
+          player.current.height = 30;
         }
-        
-        // Check for exit gate (level complete)
-        if (briefcase.hidden && checkCollision(player, exitGate)) {
-          setGameOver(true);
-          setIsGameActive(false);
-          game.pause();
-          
-          setGameProgress(100);
-          
-          toast({
-            title: "Level Complete!",
-            description: "You've completed the OrbDoc experience level.",
-            duration: 5000
-          });
-        }
-        
-        // Simple platform collision (prevent falling through)
-        if (player.pos.y + player.height >= platform.pos.y) {
-          player.pos.y = platform.pos.y - player.height;
-        }
-      });
+      };
       
-      // Start rendering loop
-      game.start();
+      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener('keyup', handleKeyUp);
+      
+      renderGame();
+      
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.removeEventListener('keyup', handleKeyUp);
+      };
     };
     
     initGame();
     
     return () => {
-      // Cleanup
-      if (gameInstance.current) {
-        // Use destroy instead of stop if available, or simply remove event listeners
-        if (typeof gameInstance.current.destroy === 'function') {
-          gameInstance.current.destroy();
-        } else {
-          // Fallback cleanup, remove event listeners if needed
-          document.removeEventListener('keydown', () => {});
-          document.removeEventListener('keyup', () => {});
-        }
-      }
+      stopGameLoop();
     };
-  }, [onItemCollect, toast]);
+  }, []);
+  
+  useEffect(() => {
+    if (isGameActive) {
+      startGameLoop();
+    } else {
+      stopGameLoop();
+    }
+    
+    return () => {
+      stopGameLoop();
+    };
+  }, [isGameActive]);
   
   const handleDialogClose = () => {
     setDialogOpen(false);
     
-    // Resume game after dialog is closed
-    if (gameInstance.current && !gameOver) {
+    if (!gameOver) {
       setIsGameActive(true);
-      if (typeof gameInstance.current.resume === 'function') {
-        gameInstance.current.resume();
-      } else {
-        // If resume is not available, restart the game loop
-        gameInstance.current.start();
-      }
     }
   };
   
   const startGame = () => {
+    player.current.pos = { x: 50, y: 200 };
+    briefcase.current.hidden = false;
+    
     setIsGameActive(true);
     setGameOver(false);
     setScore(0);
     setGameProgress(0);
-    
-    if (gameInstance.current) {
-      if (typeof gameInstance.current.resume === 'function') {
-        gameInstance.current.resume();
-      } else {
-        // If resume is not available, restart the game loop
-        gameInstance.current.start();
-      }
-    }
   };
   
   return (
     <div className="relative h-[300px] border border-terminal-text/30 rounded-md">
-      {/* Progress bar */}
       <div className="absolute top-2 left-2 right-2 z-10">
         <Progress value={gameProgress} className="h-2" />
       </div>
@@ -318,7 +357,6 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
         />
       </div>
       
-      {/* Dialog for showing item details */}
       <Dialog open={dialogOpen} onOpenChange={(open) => {
         if (!open) handleDialogClose();
       }}>
