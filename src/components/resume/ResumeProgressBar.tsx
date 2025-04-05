@@ -16,71 +16,50 @@ interface ResumeProgressBarProps {
   };
 }
 
-const ResumeProgressBar: React.FC<ResumeProgressBarProps> = ({ 
-  collectedItems, 
-  totalItems 
-}) => {
-  const calculateProgress = (collected: number, total: number) => {
-    return (collected / total) * 100;
-  };
+const ResumeProgressBar: React.FC<ResumeProgressBarProps> = ({ collectedItems, totalItems }) => {
+  const experienceProgress = (collectedItems.experience / totalItems.experience) * 100;
+  const educationProgress = (collectedItems.education / totalItems.education) * 100;
+  const awardsProgress = (collectedItems.awards / totalItems.awards) * 100;
   
-  const getOverallProgress = () => {
-    const totalCollected = collectedItems.experience + collectedItems.education + collectedItems.awards;
-    const total = totalItems.experience + totalItems.education + totalItems.awards;
-    return (totalCollected / total) * 100;
-  };
+  const totalProgress = 
+    (collectedItems.experience + collectedItems.education + collectedItems.awards) / 
+    (totalItems.experience + totalItems.education + totalItems.awards) * 100;
   
   return (
-    <div className="mb-8 terminal-window p-4">
-      <h3 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-        <span className="terminal-prompt">Resume Progress</span>
-      </h3>
+    <div className="bg-terminal-navy/40 p-4 rounded-lg border border-terminal-text/30 mb-6">
+      <div className="flex justify-between items-center mb-2">
+        <div className="text-terminal-accent1 text-lg">Resume Explorer</div>
+        <div className="text-terminal-text">
+          <span className="text-yellow-300 mr-1">★</span> 
+          {collectedItems.experience + collectedItems.education + collectedItems.awards} collected
+        </div>
+      </div>
       
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm text-terminal-text">
-            <div className="flex items-center">
-              <span className="mr-2">Overall Progress</span>
-            </div>
-            <div>{Math.round(getOverallProgress())}%</div>
+      <Progress value={totalProgress} className="h-2 mb-4" />
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <div className="flex items-center mb-1">
+            <Briefcase className="w-4 h-4 mr-2 text-blue-400" />
+            <span className="text-blue-300 text-sm">Experience: {collectedItems.experience}/{totalItems.experience}</span>
           </div>
-          <Progress value={getOverallProgress()} className="h-2" />
+          <Progress value={experienceProgress} className="h-1.5" />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-terminal-text">
-              <div className="flex items-center">
-                <Briefcase className="w-4 h-4 mr-2 text-blue-500" />
-                <span>Experience</span>
-              </div>
-              <div>{collectedItems.experience}/{totalItems.experience}</div>
-            </div>
-            <Progress value={calculateProgress(collectedItems.experience, totalItems.experience)} className="h-2 bg-blue-500/20" 
-            />
+        <div>
+          <div className="flex items-center mb-1">
+            <GraduationCap className="w-4 h-4 mr-2 text-green-400" />
+            <span className="text-green-300 text-sm">Education: {collectedItems.education}/{totalItems.education}</span>
           </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-terminal-text">
-              <div className="flex items-center">
-                <GraduationCap className="w-4 h-4 mr-2 text-green-500" />
-                <span>Education</span>
-              </div>
-              <div>{collectedItems.education}/{totalItems.education}</div>
-            </div>
-            <Progress value={calculateProgress(collectedItems.education, totalItems.education)} className="h-2 bg-green-500/20" />
+          <Progress value={educationProgress} className="h-1.5" />
+        </div>
+        
+        <div>
+          <div className="flex items-center mb-1">
+            <Award className="w-4 h-4 mr-2 text-yellow-400" />
+            <span className="text-yellow-300 text-sm">Awards: {collectedItems.awards}/{totalItems.awards}</span>
           </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-terminal-text">
-              <div className="flex items-center">
-                <Award className="w-4 h-4 mr-2 text-yellow-500" />
-                <span>Awards</span>
-              </div>
-              <div>{collectedItems.awards}/{totalItems.awards}</div>
-            </div>
-            <Progress value={calculateProgress(collectedItems.awards, totalItems.awards)} className="h-2 bg-yellow-500/20" />
-          </div>
+          <Progress value={awardsProgress} className="h-1.5" />
         </div>
       </div>
     </div>
