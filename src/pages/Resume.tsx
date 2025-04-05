@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import ResumeGame from '@/components/resume/ResumeGame';
 import ResumeContent from '@/components/resume/ResumeContent';
@@ -8,6 +7,7 @@ import { Briefcase, GraduationCap, Star, Download } from 'lucide-react';
 import resumeData from '@/data/resumeData';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Toaster } from '@/components/ui/toaster';
 
 const Resume = () => {
   const [activeSection, setActiveSection] = useState('');
@@ -47,7 +47,7 @@ const Resume = () => {
                 <div className="flex-1">
                   <h3 className="text-terminal-text mb-2">EXP</h3>
                   <div className="flex flex-wrap gap-2">
-                    {resumeData.experience.map((_, index) => (
+                    {resumeData.experience.slice(0, 5).map((_, index) => (
                       <div 
                         key={`exp-${index}`}
                         className={`p-2 rounded-md ${activeSection === `experience-${index}` || index < collectedItems.experience 
@@ -170,6 +170,7 @@ const Resume = () => {
           )}
         </div>
       </div>
+      <Toaster />
     </Layout>
   );
 };
