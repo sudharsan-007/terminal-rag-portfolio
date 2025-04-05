@@ -1,10 +1,9 @@
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import ResumeGame from '@/components/resume/ResumeGame';
 import ResumeContent from '@/components/resume/ResumeContent';
-import ResumeProgressBar from '@/components/resume/ResumeProgressBar';
 
 const Resume = () => {
   const [activeSection, setActiveSection] = useState('');
@@ -14,12 +13,6 @@ const Resume = () => {
     education: 0,
     awards: 0
   });
-  
-  const totalItems = {
-    experience: 5, // Total number of work experiences
-    education: 4, // Total number of educational achievements
-    awards: 8 // Total number of awards
-  };
   
   const handleItemCollected = (type: 'experience' | 'education' | 'awards', id: string) => {
     setCollectedItems(prev => ({
@@ -37,11 +30,6 @@ const Resume = () => {
             sudharsan@portfolio:~/resume
           </div>
         </div>
-        
-        <ResumeProgressBar 
-          collectedItems={collectedItems} 
-          totalItems={totalItems} 
-        />
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div className="lg:col-span-2">
