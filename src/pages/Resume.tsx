@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '@/components/Layout';
 import ResumeGame from '@/components/resume/ResumeGame';
@@ -43,48 +43,38 @@ const Resume = () => {
           totalItems={totalItems} 
         />
         
-        <div className="grid grid-cols-1 gap-6 mb-8">
-          {/* Game Section */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="terminal-window p-4"
-          >
-            {showGame && (
-              <ResumeGame 
-                onItemCollect={handleItemCollected} 
-                setShowGame={setShowGame}
-              />
-            )}
-          </motion.div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="terminal-window p-4 h-full"
+            >
+              <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
+                <span className="terminal-prompt">Scroll to explore my journey</span>
+              </h2>
+              {showGame && (
+                <ResumeGame 
+                  onItemCollect={handleItemCollected} 
+                  setShowGame={setShowGame}
+                />
+              )}
+            </motion.div>
+          </div>
           
-          {/* Info Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-3">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="terminal-window p-4"
-              >
-                <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-                  <span className="terminal-prompt">⭐ Collected Resume Items</span>
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {activeSection ? (
-                    <div className="col-span-full">
-                      <ResumeContent activeSection={activeSection} />
-                    </div>
-                  ) : (
-                    <div className="col-span-full text-center py-10">
-                      <p className="text-terminal-text">Collect stars in the game to reveal my resume details!</p>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            </div>
+          <div className="lg:col-span-1">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="terminal-window p-4 h-full overflow-y-auto max-h-[70vh]"
+            >
+              <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
+                <span className="terminal-prompt">Resume Details</span>
+              </h2>
+              <ResumeContent activeSection={activeSection} />
+            </motion.div>
           </div>
         </div>
       </div>

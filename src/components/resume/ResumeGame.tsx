@@ -1,9 +1,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { ArrowUp, ArrowDown, Briefcase, GraduationCap, Award, DownloadIcon } from 'lucide-react';
+import { ArrowUp, ArrowDown, Briefcase, GraduationCap, Award } from 'lucide-react';
 import resumeData from '@/data/resumeData';
-import { Button } from '@/components/ui/button';
 
 interface GameObject {
   x: number;
@@ -30,8 +29,6 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
   const [isGameActive, setIsGameActive] = useState(false);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [highScore, setHighScore] = useState(0);
-  const [gameMode, setGameMode] = useState<'experience' | 'education' | 'awards'>('experience');
   
   const gameSpeed = useRef(5);
   const gravity = useRef(1);
@@ -81,41 +78,24 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     
     initialObjects.current = [...objects];
     setGameObjects(objects);
-    
-    // Check for stored high score
-    const storedHighScore = localStorage.getItem('resumeGameHighScore');
-    if (storedHighScore) {
-      setHighScore(parseInt(storedHighScore, 10));
-    }
   }, []);
   
   // Setup keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isGameActive) {
-        if (e.code === 'Space') {
-          startGame();
-          return;
-        }
+      if (!isGameActive) return;
+      
+      if (e.key === 'ArrowUp' || e.code === 'Space') {
+        jump();
       }
       
-      if (e.code === 'Space' || e.code === 'ArrowUp') {
-        jump();
-      } else if (e.code === 'ArrowDown' || e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown') {
         setIsDucking(true);
-      } else if (e.key === '1') {
-        setGameMode('experience');
-      } else if (e.key === '2') {
-        setGameMode('education');
-      } else if (e.key === '3') {
-        setGameMode('awards');
-      } else if (e.key === 'r' || e.key === 'R') {
-        startGame();
       }
     };
     
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === 'ArrowDown' || e.key === 'ArrowDown') {
+      if (e.key === 'ArrowDown') {
         setIsDucking(false);
       }
     };
@@ -176,7 +156,7 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     return () => {
       cancelAnimationFrame(animationFrameId.current);
     };
-  }, [isGameActive, gameOver, gameMode]);
+  }, [isGameActive, gameOver]);
   
   const updateGameState = (deltaTime: number) => {
     if (!playerRef.current || !gameRef.current) return;
@@ -200,15 +180,14 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     const updatedObjects = gameObjects.map(obj => {
       const newX = obj.x - gameSpeed.current;
       
-      // Only check collisions for the current game mode
+      // Check for collisions
       if (!obj.collected && 
-          obj.type === gameMode &&
           newX < 100 && 
           newX > 0 && 
           ((isJumping && playerY.current < -20) || !isJumping)) {
         // Collect the item
         onItemCollect(obj.type, obj.id);
-        setScore(prev => prev + 100);
+        setScore(prev => prev + 1);
         return { ...obj, collected: true, x: newX };
       }
       
@@ -217,22 +196,17 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     
     setGameObjects(updatedObjects);
     
-    // Update progress based on current game mode
-    const objectsOfCurrentType = initialObjects.current.filter(obj => obj.type === gameMode);
-    const collectedOfCurrentType = updatedObjects.filter(obj => obj.type === gameMode && obj.collected).length;
-    const progress = (collectedOfCurrentType / objectsOfCurrentType.length) * 100;
+    // Update progress
+    const totalDistance = initialObjects.current.length * 500;
+    const currentDistance = Math.min(score * 500, totalDistance);
+    const progress = (currentDistance / totalDistance) * 100;
     setGameProgress(progress);
     
     // Check if game is complete
     if (progress >= 100) {
       setGameOver(true);
       setIsGameActive(false);
-      
-      // Update high score if needed
-      if (score > highScore) {
-        setHighScore(score);
-        localStorage.setItem('resumeGameHighScore', score.toString());
-      }
+      setShowGame(false);
     }
   };
   
@@ -253,11 +227,11 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     setGameObjects(initialObjects.current.map(obj => ({ ...obj, collected: false })));
   };
   
-  // Render game objects based on their type and game mode
+  // Render game objects based on their type
   const renderGameObject = (obj: GameObject) => {
-    const iconSize = 28;
+    const iconSize = 32;
     
-    if (obj.collected || obj.type !== gameMode) return null;
+    if (obj.collected) return null;
     
     let icon;
     let colorClass = '';
@@ -265,202 +239,97 @@ const ResumeGame: React.FC<ResumeGameProps> = ({ onItemCollect, setShowGame }) =
     switch (obj.type) {
       case 'experience':
         icon = <Briefcase size={iconSize} />;
-        colorClass = 'text-blue-400';
+        colorClass = 'text-blue-500';
         break;
       case 'education':
         icon = <GraduationCap size={iconSize} />;
-        colorClass = 'text-green-400';
+        colorClass = 'text-green-500';
         break;
       case 'awards':
         icon = <Award size={iconSize} />;
-        colorClass = 'text-yellow-400';
+        colorClass = 'text-yellow-500';
         break;
     }
     
     return (
       <div 
         key={obj.id}
-        className={`absolute ${colorClass} animate-pulse`}
+        className={`absolute ${colorClass}`}
         style={{
           transform: `translateX(${obj.x}px)`,
-          bottom: '15px'
+          bottom: '10px'
         }}
       >
-        <div className="text-yellow-300 text-2xl">★</div>
+        {icon}
       </div>
     );
   };
   
-  const getModeName = (mode: 'experience' | 'education' | 'awards') => {
-    switch (mode) {
-      case 'experience': return 'Experience Run';
-      case 'education': return 'Education Jump';
-      case 'awards': return 'Fun Facts Dash';
-    }
-  };
-  
-  const getModeButtonClass = (mode: 'experience' | 'education' | 'awards') => {
-    const baseClass = "px-4 py-2 rounded-md text-terminal-text";
-    if (mode === gameMode) {
-      switch (mode) {
-        case 'experience': return `${baseClass} bg-purple-700`;
-        case 'education': return `${baseClass} bg-terminal-accent1/30`;
-        case 'awards': return `${baseClass} bg-terminal-accent1/30`;
-      }
-    }
-    return `${baseClass} bg-terminal-accent1/30`;
-  };
-  
   return (
-    <div className="space-y-4">
-      {/* Game mode selector */}
-      <div className="flex items-center justify-between">
-        <div className="flex space-x-2">
-          <button 
-            className={getModeButtonClass('experience')}
-            onClick={() => setGameMode('experience')}
-          >
-            {getModeName('experience')}
-          </button>
-          <button 
-            className={getModeButtonClass('education')}
-            onClick={() => setGameMode('education')}
-          >
-            {getModeName('education')}
-          </button>
-          <button 
-            className={getModeButtonClass('awards')}
-            onClick={() => setGameMode('awards')}
-          >
-            {getModeName('awards')}
-          </button>
-        </div>
-        
-        <Button variant="default" className="bg-terminal-accent1 hover:bg-terminal-accent1/80">
-          <DownloadIcon className="w-4 h-4 mr-2" /> Download Full Resume
-        </Button>
+    <div className="relative h-[300px] border border-terminal-text/30 rounded-md">
+      {/* Progress bar */}
+      <div className="absolute top-2 left-2 right-2 z-10">
+        <Progress value={gameProgress} className="h-2" />
       </div>
       
-      <div className="relative h-[300px] border border-terminal-text/30 rounded-md overflow-hidden bg-terminal-navy/80">
-        {/* Progress bar */}
-        <div className="absolute top-2 left-2 right-2 z-10">
-          <Progress value={gameProgress} className="h-2" />
-        </div>
-        
-        <div className="absolute bottom-2 left-4 text-terminal-accent1 z-10 font-mono">
-          SCORE: {score}
-        </div>
-        
-        <div className="absolute bottom-2 right-4 text-terminal-accent1 z-10 font-mono">
-          HI: {highScore}
-        </div>
-        
-        {!isGameActive && !gameOver && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-terminal-navy/90 z-20">
-            <div className="text-xl text-terminal-accent1 mb-4">Experience Timeline</div>
-            <div className="text-sm text-terminal-text text-center mb-4 max-w-md">
-              <p className="mb-2">Scroll to play or press SPACE to start</p>
-              <p>Collect stars to discover my professional journey!</p>
+      <div className="absolute top-4 left-2 text-terminal-text z-10">
+        Score: {score}
+      </div>
+      
+      {!isGameActive && !gameOver && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-terminal-navy/80 z-20 backdrop-blur-sm">
+          <div className="text-xl text-terminal-accent1 mb-4">Scroll to explore my journey</div>
+          <div className="flex space-x-4 mb-4">
+            <div className="flex flex-col items-center">
+              <ArrowUp className="text-terminal-text" />
+              <span className="text-terminal-text text-sm">Jump</span>
             </div>
-            <div className="flex space-x-8 mb-6">
-              <div className="flex flex-col items-center">
-                <div className="p-2 bg-terminal-accent1/20 rounded-md mb-2">
-                  <ArrowUp className="text-terminal-text w-6 h-6" />
-                </div>
-                <span className="text-terminal-text text-sm">Jump</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="p-2 bg-terminal-accent1/20 rounded-md mb-2">
-                  <ArrowDown className="text-terminal-text w-6 h-6" />
-                </div>
-                <span className="text-terminal-text text-sm">Duck</span>
-              </div>
+            <div className="flex flex-col items-center">
+              <ArrowDown className="text-terminal-text" />
+              <span className="text-terminal-text text-sm">Duck</span>
             </div>
-            <button
-              onClick={startGame}
-              className="px-6 py-2 bg-terminal-accent1 text-black rounded-md hover:bg-terminal-accent1/80 font-medium"
-            >
-              Start Game
-            </button>
           </div>
-        )}
+          <button
+            onClick={startGame}
+            className="px-4 py-2 bg-terminal-accent1 text-black rounded-md hover:bg-terminal-accent1/80"
+          >
+            Start Game
+          </button>
+        </div>
+      )}
+      
+      {gameOver && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-terminal-navy/80 z-20 backdrop-blur-sm">
+          <div className="text-xl text-terminal-accent1 mb-4">Journey Complete!</div>
+          <div className="text-terminal-text mb-4">You've explored my entire resume</div>
+          <button
+            onClick={startGame}
+            className="px-4 py-2 bg-terminal-accent1 text-black rounded-md hover:bg-terminal-accent1/80"
+          >
+            Play Again
+          </button>
+        </div>
+      )}
+      
+      <div
+        ref={gameRef}
+        className="relative h-full overflow-hidden bg-terminal-navy/30"
+      >
+        {/* Ground */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-terminal-text/50"></div>
         
-        {gameOver && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-terminal-navy/90 z-20">
-            <div className="text-xl text-terminal-accent1 mb-2">Game Over!</div>
-            <div className="text-terminal-text mb-6">
-              You collected {gameObjects.filter(obj => obj.collected && obj.type === gameMode).length} stars
-            </div>
-            <button
-              onClick={startGame}
-              className="px-6 py-2 bg-terminal-accent1 text-black rounded-md hover:bg-terminal-accent1/80 font-medium"
-            >
-              Try Again
-            </button>
-          </div>
-        )}
-        
+        {/* Player character (dinosaur) */}
         <div
-          ref={gameRef}
-          className="relative h-full"
+          ref={playerRef}
+          className={`absolute bottom-10 left-20 w-12 h-12 ${isDucking ? 'h-6' : 'h-12'}`}
         >
-          {/* Ground */}
-          <div className="absolute bottom-0 left-0 right-0 h-2 bg-terminal-text/60"></div>
-          
-          {/* Player character */}
-          <div
-            ref={playerRef}
-            className={`absolute bottom-10 left-20 transition-transform`}
-            style={{ height: isDucking ? '40px' : '60px' }}
-          >
-            <div className={`w-12 h-full bg-terminal-accent1 transition-all ${isDucking ? 'rounded-t-sm' : 'rounded-lg'}`}>
-              {/* Add eyes to character */}
-              <div className="relative w-full h-full flex items-center justify-center">
-                {!isDucking && (
-                  <div className="absolute top-2 left-0 right-0 flex justify-center space-x-2">
-                    <div className="w-2 h-2 bg-black rounded-full"></div>
-                    <div className="w-2 h-2 bg-black rounded-full"></div>
-                  </div>
-                )}
-                <span className="text-black font-bold">S</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Render game objects */}
-          {gameObjects.map(renderGameObject)}
-        </div>
-      </div>
-      
-      {/* Keyboard controls */}
-      <div className="bg-terminal-navy/40 p-4 rounded-md border border-terminal-text/30">
-        <h3 className="text-terminal-text mb-3">Keyboard Controls:</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="flex items-center">
-            <div className="bg-terminal-text/20 px-2 py-1 rounded mr-2 text-sm">Space</div>
-            <span className="text-terminal-text text-sm">Jump</span>
-          </div>
-          <div className="flex items-center">
-            <div className="bg-terminal-text/20 px-2 py-1 rounded mr-2 text-sm">↓</div>
-            <span className="text-terminal-text text-sm">Duck</span>
-          </div>
-          <div className="flex items-center">
-            <div className="bg-terminal-text/20 px-2 py-1 rounded mr-2 text-sm">1</div>
-            <span className="text-terminal-text text-sm">Experience mode</span>
-          </div>
-          <div className="flex items-center">
-            <div className="bg-terminal-text/20 px-2 py-1 rounded mr-2 text-sm">2</div>
-            <span className="text-terminal-text text-sm">Education mode</span>
-          </div>
-          <div className="flex items-center">
-            <div className="bg-terminal-text/20 px-2 py-1 rounded mr-2 text-sm">3</div>
-            <span className="text-terminal-text text-sm">Fun Facts mode</span>
-          </div>
-          <div className="flex items-center">
-            <div className="bg-terminal-text/20 px-2 py-1 rounded mr-2 text-sm">R</div>
-            <span className="text-terminal-text text-sm">Restart game</span>
+          <div className="h-full w-full rounded-full bg-terminal-accent1 flex items-center justify-center">
+            <span className="text-black font-bold">S</span>
           </div>
         </div>
+        
+        {/* Render game objects */}
+        {gameObjects.map(renderGameObject)}
       </div>
     </div>
   );
