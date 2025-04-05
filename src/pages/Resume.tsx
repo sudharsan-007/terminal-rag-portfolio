@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
-import ResumeGame from '@/components/resume/ResumeGame';
 import ResumeContent from '@/components/resume/ResumeContent';
 import { Briefcase, GraduationCap, Star, Download } from 'lucide-react';
 import resumeData from '@/data/resumeData';
@@ -11,7 +10,6 @@ import { Toaster } from '@/components/ui/toaster';
 
 const Resume = () => {
   const [activeSection, setActiveSection] = useState('');
-  const [showGame, setShowGame] = useState(true);
   const [collectedItems, setCollectedItems] = useState({
     experience: 0,
     education: 0,
@@ -159,14 +157,7 @@ const Resume = () => {
             </div>
           </div>
           
-          {showGame && (
-            <div className="relative h-[300px] border border-terminal-text/30 rounded-md overflow-hidden bg-terminal-navy/30">
-              <ResumeGame 
-                onItemCollect={handleItemCollected} 
-                setShowGame={setShowGame}
-              />
-            </div>
-          )}
+          {/* Removed the game window */}
         </div>
       </div>
       <Toaster />

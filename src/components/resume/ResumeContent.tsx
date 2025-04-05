@@ -1,4 +1,3 @@
-
 import React from 'react';
 import resumeData from '@/data/resumeData';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +11,7 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ activeSection }) => {
   if (!activeSection) {
     return (
       <div className="text-terminal-text">
-        <p className="text-center text-terminal-text/70">Select an item to view details</p>
+        {/* Empty div - removed the "Select an item to view details" text */}
       </div>
     );
   }
@@ -134,7 +133,7 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ activeSection }) => {
   
   return (
     <div className="text-terminal-text">
-      <p className="text-center">Select an item to view details</p>
+      {/* Empty div - removed the "Select an item to view details" fallback text */}
     </div>
   );
 };
