@@ -24,6 +24,7 @@ interface Award {
   organization?: string;
   year?: string;
   description?: string;
+  location?: string; // Added location property to the Award interface
 }
 
 interface ResumeData {
