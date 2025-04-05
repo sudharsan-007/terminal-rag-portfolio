@@ -38,7 +38,7 @@ const Resume = () => {
           </div>
         </div>
         
-        <div className="terminal-window flex-grow overflow-hidden">
+        <div className="terminal-window p-4">
           <div className="flex justify-between items-center mb-4 border-b border-terminal-text/30 pb-2">
             <h2 className="text-xl text-terminal-accent1">
               <span className="terminal-prompt">Collect items to explore my journey</span>
@@ -156,6 +156,8 @@ const Resume = () => {
               )}
             </div>
           </div>
+          
+          {/* Removed the game window */}
         </div>
       </div>
       <Toaster />
