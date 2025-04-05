@@ -40,10 +40,25 @@ const Resume = () => {
           </div>
         </div>
         
-        <div className="terminal-window p-4 mb-6">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="terminal-window p-4 h-[80vh]">
+          <div className="flex justify-between items-center mb-4 border-b border-terminal-text/30 pb-2">
+            <h2 className="text-xl text-terminal-accent1">
+              <span className="terminal-prompt">Collect items to explore my journey</span>
+            </h2>
+            
+            <Button 
+              variant="outline" 
+              className="border-terminal-text text-terminal-text hover:bg-terminal-text/10"
+              onClick={handleDownloadResume}
+            >
+              <Download className="mr-2" size={16} />
+              Download PDF
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
             <div className="lg:col-span-3">
-              <div className="flex flex-col sm:flex-row gap-6 mb-4">
+              <div className="flex flex-col sm:flex-row gap-6">
                 <div className="flex-1">
                   <h3 className="text-terminal-text mb-2">EXP</h3>
                   <div className="flex flex-wrap gap-2">
@@ -93,25 +108,12 @@ const Resume = () => {
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="flex items-center justify-center">
-              <Button 
-                variant="outline" 
-                className="border-terminal-text text-terminal-text hover:bg-terminal-text/10"
-                onClick={handleDownloadResume}
-              >
-                <Download className="mr-2" size={16} />
-                Download PDF
-              </Button>
-            </div>
-          </div>
-          
-          <Separator className="my-4 bg-terminal-text/20" />
-          
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-3 overflow-y-auto" style={{ maxHeight: '250px' }}>
-              <ResumeContent activeSection={activeSection} />
+              
+              <Separator className="my-4 bg-terminal-text/20" />
+              
+              <div className="overflow-y-auto" style={{ maxHeight: '200px' }}>
+                <ResumeContent activeSection={activeSection} />
+              </div>
             </div>
             
             <div className="text-terminal-text">
@@ -156,12 +158,7 @@ const Resume = () => {
               )}
             </div>
           </div>
-        </div>
-        
-        <div className="terminal-window p-4">
-          <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-            <span className="terminal-prompt">Collect items to explore my journey</span>
-          </h2>
+          
           {showGame && (
             <ResumeGame 
               onItemCollect={handleItemCollected} 
