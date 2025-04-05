@@ -1,5 +1,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import * as Matter from 'matter-js';
+import * as PIXI from 'pixi.js';
 import resumeData from '@/data/resumeData';
 import { useToast } from '@/hooks/use-toast';
 
@@ -36,9 +38,11 @@ export type GameState = 'start' | 'playing' | 'paused' | 'gameOver';
 
 interface UseGameLogicProps {
   onItemCollect: (type: 'experience' | 'education' | 'awards', id: string) => void;
+  containerRef: React.RefObject<HTMLDivElement>;
+  pixiApp: PIXI.Application | null;
 }
 
-export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
+export const useGameLogic = ({ onItemCollect, containerRef, pixiApp }: UseGameLogicProps) => {
   // Game state
   const [gameState, setGameState] = useState<GameState>('start');
   const [gameProgress, setGameProgress] = useState(0);
@@ -64,7 +68,11 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
 
-  // Game loop refs
+  // Physics refs
+  const engineRef = useRef<Matter.Engine | null>(null);
+  const playerBodyRef = useRef<Matter.Body | null>(null);
+  const platformBodiesRef = useRef<Matter.Body[]>([]);
+  const objectBodiesRef = useRef<Matter.Body[]>([]);
   const requestRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const isPaused = useRef(false);
@@ -78,6 +86,117 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
   const friction = 0.8;
   const gameWidth = 800;
   const gameHeight = 300;
+
+  // Initialize Matter.js engine
+  const initializePhysics = useCallback(() => {
+    if (!containerRef.current) return;
+    
+    // Clean up previous engine
+    if (engineRef.current) {
+      Matter.Engine.clear(engineRef.current);
+    }
+    
+    // Create engine
+    const engine = Matter.Engine.create({
+      gravity: { x: 0, y: 1 }
+    });
+    engineRef.current = engine;
+    
+    // Create player body
+    const playerBody = Matter.Bodies.circle(
+      player.x + player.width / 2,
+      gameHeight - player.y - player.height / 2,
+      player.width / 2,
+      {
+        restitution: 0,
+        friction: 0.1,
+        label: 'player',
+        collisionFilter: {
+          category: 0x0001,
+          mask: 0x0002 | 0x0004
+        }
+      }
+    );
+    playerBodyRef.current = playerBody;
+    
+    // Add player to world
+    Matter.Composite.add(engine.world, [playerBody]);
+    
+    return engine;
+  }, [player, gameHeight]);
+  
+  // Create platform bodies
+  const createPlatformBodies = useCallback((newPlatforms: Platform[]) => {
+    if (!engineRef.current) return;
+    
+    // Remove old platform bodies
+    if (platformBodiesRef.current.length > 0) {
+      Matter.Composite.remove(engineRef.current.world, platformBodiesRef.current);
+      platformBodiesRef.current = [];
+    }
+    
+    // Create new platform bodies
+    const platformBodies = newPlatforms.map((platform) => {
+      const body = Matter.Bodies.rectangle(
+        platform.x + platform.width / 2,
+        gameHeight - platform.y - platform.height / 2,
+        platform.width,
+        platform.height,
+        {
+          isStatic: true,
+          label: `platform-${platform.type}`,
+          collisionFilter: {
+            category: 0x0002,
+            mask: 0x0001
+          }
+        }
+      );
+      return body;
+    });
+    
+    platformBodiesRef.current = platformBodies;
+    Matter.Composite.add(engineRef.current.world, platformBodies);
+    
+    return platformBodies;
+  }, [gameHeight]);
+  
+  // Create game object bodies
+  const createObjectBodies = useCallback((newObjects: GameObject[]) => {
+    if (!engineRef.current) return;
+    
+    // Remove old object bodies
+    if (objectBodiesRef.current.length > 0) {
+      Matter.Composite.remove(engineRef.current.world, objectBodiesRef.current);
+      objectBodiesRef.current = [];
+    }
+    
+    // Create new object bodies
+    const objectBodies = newObjects
+      .filter(obj => !obj.collected)
+      .map((obj) => {
+        const body = Matter.Bodies.rectangle(
+          obj.x + obj.width / 2,
+          gameHeight - obj.y - obj.height / 2,
+          obj.width,
+          obj.height,
+          {
+            isSensor: true,
+            isStatic: true,
+            label: `object-${obj.id}`,
+            collisionFilter: {
+              category: 0x0004,
+              mask: 0x0001
+            }
+          }
+        );
+        return body;
+      });
+    
+    objectBodiesRef.current = objectBodies;
+    Matter.Composite.add(engineRef.current.world, objectBodies);
+    
+    return objectBodies;
+  }, [gameHeight]);
 
   // Initialize game objects and platforms
   const initializeGame = useCallback(() => {
@@ -126,7 +245,18 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
     setGameProgress(0);
     setGameState('playing');
     isPaused.current = false;
-  }, [gameWidth, gameHeight]);
+    
+    // Initialize physics engine
+    const engine = initializePhysics();
+    if (engine) {
+      createPlatformBodies(levelPlatforms);
+      createObjectBodies(levelObjects);
+    }
+    
+    // Start game loop
+    lastTimeRef.current = performance.now();
+    requestRef.current = requestAnimationFrame(gameLoop);
+  }, [gameWidth, initializePhysics, createPlatformBodies, createObjectBodies]);
 
   // Handle item collection
   const handleItemCollection = useCallback((obj: GameObject) => {
@@ -169,13 +299,19 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
       )
     );
     
+    // Update physics bodies
+    const updatedObjects = gameObjects.map(item => 
+      item.id === obj.id ? { ...item, collected: true } : item
+    );
+    createObjectBodies(updatedObjects);
+    
     // Show toast notification
     toast({
       title: "Item Collected!",
       description: `You've collected a ${obj.type} item.`,
       duration: 3000
     });
-  }, [onItemCollect, toast]);
+  }, [onItemCollect, toast, gameObjects, createObjectBodies]);
 
   // Handle dialog close
   const handleDialogClose = useCallback(() => {
@@ -206,36 +342,56 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
         return;
       }
       
+      const playerBody = playerBodyRef.current;
+      if (!playerBody) return;
+      
       if ((e.key === 'ArrowUp' || e.key === 'w' || e.code === 'Space') && !player.isJumping) {
-        setPlayer(prev => ({ 
-          ...prev, 
-          vy: jumpForce, 
-          isJumping: true 
-        }));
+        // Apply jump force
+        Matter.Body.applyForce(playerBody, playerBody.position, { x: 0, y: -0.1 });
+        setPlayer(prev => ({ ...prev, isJumping: true }));
       }
       
       if (e.key === 'ArrowLeft' || e.key === 'a') {
-        setPlayer(prev => ({ ...prev, vx: -moveSpeed }));
+        // Move left
+        Matter.Body.setVelocity(playerBody, { x: -moveSpeed, y: playerBody.velocity.y });
       }
       
       if (e.key === 'ArrowRight' || e.key === 'd') {
-        setPlayer(prev => ({ ...prev, vx: moveSpeed }));
+        // Move right
+        Matter.Body.setVelocity(playerBody, { x: moveSpeed, y: playerBody.velocity.y });
       }
       
       if (e.key === 'ArrowDown' || e.key === 's') {
+        // Duck
         setPlayer(prev => ({ ...prev, isDucking: true }));
+        if (playerBody) {
+          const duckScale = 0.6;
+          Matter.Body.scale(playerBody, 1, duckScale);
+        }
       }
     };
     
     const handleKeyUp = (e: KeyboardEvent) => {
       if (gameState !== 'playing' || isPaused.current) return;
       
+      const playerBody = playerBodyRef.current;
+      if (!playerBody) return;
+      
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'ArrowRight' || e.key === 'd') {
-        setPlayer(prev => ({ ...prev, vx: 0 }));
+        // Apply friction to slow down
+        Matter.Body.setVelocity(playerBody, { 
+          x: playerBody.velocity.x * friction, 
+          y: playerBody.velocity.y 
+        });
       }
       
       if (e.key === 'ArrowDown' || e.key === 's') {
+        // Stand up from ducking
         setPlayer(prev => ({ ...prev, isDucking: false }));
+        if (playerBody) {
+          const unduckScale = 1 / 0.6;
+          Matter.Body.scale(playerBody, 1, unduckScale);
+        }
       }
     };
     
@@ -246,11 +402,11 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameState, player, dialogOpen, handleDialogClose]);
+  }, [gameState, player, dialogOpen, handleDialogClose, moveSpeed, friction]);
 
   // Game loop
   const gameLoop = useCallback((timestamp: number) => {
-    if (isPaused.current) return;
+    if (isPaused.current || !engineRef.current || !playerBodyRef.current) return;
     
     if (!lastTimeRef.current) {
       lastTimeRef.current = timestamp;
@@ -259,129 +415,72 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
     const deltaTime = timestamp - lastTimeRef.current;
     lastTimeRef.current = timestamp;
     
-    // Update player position
+    // Update physics engine
+    Matter.Engine.update(engineRef.current, deltaTime);
+    
+    // Update player state from physics
+    const playerBody = playerBodyRef.current;
+    
     setPlayer(prev => {
-      // Apply friction
-      let newVx = prev.vx * friction;
-      if (Math.abs(newVx) < 0.1) newVx = 0;
+      const isJumping = playerBody.velocity.y < -0.1 || playerBody.velocity.y > 0.1;
       
-      // Apply gravity
-      let newVy = prev.vy + gravity;
+      return {
+        ...prev,
+        x: playerBody.position.x - prev.width / 2,
+        y: gameHeight - playerBody.position.y - prev.height / 2,
+        vx: playerBody.velocity.x,
+        vy: -playerBody.velocity.y,
+        isJumping: isJumping
+      };
+    });
+    
+    // Check for collisions with objects
+    for (const objBody of objectBodiesRef.current) {
+      const pairs = Matter.Query.collides(playerBody, [objBody]);
       
-      // Calculate new position
-      let newX = prev.x + newVx;
-      let newY = prev.y - newVy;
-      
-      // Get player dimensions (smaller when ducking)
-      const width = prev.isDucking ? 20 : 30;
-      const height = prev.isDucking ? 20 : 30;
-      
-      // Check platform collisions
-      let onGround = false;
-      let reachedExit = false;
-      
-      for (const platform of platforms) {
-        // Check if player is on top of a platform
-        if (
-          newX + width > platform.x &&
-          newX < platform.x + platform.width &&
-          newY <= platform.y + platform.height &&
-          prev.y > platform.y + platform.height - 5
-        ) {
-          newY = platform.y + platform.height;
-          newVy = 0;
-          onGround = true;
-          
-          if (platform.type === 'exit' && gameObjects.every(obj => obj.collected)) {
-            reachedExit = true;
-          }
-        }
+      if (pairs.length > 0) {
+        const objId = objBody.label.replace('object-', '');
+        const obj = gameObjects.find(o => o.id === objId);
         
-        // Check side collision (left/right)
-        if (
-          newY < platform.y + platform.height &&
-          newY + height > platform.y &&
-          ((newVx > 0 && newX + width > platform.x && prev.x + width <= platform.x) ||
-          (newVx < 0 && newX < platform.x + platform.width && prev.x >= platform.x + platform.width))
-        ) {
-          newX = newVx > 0 ? platform.x - width : platform.x + platform.width;
-          newVx = 0;
-        }
-        
-        // Check head collision (jumping into platform)
-        if (
-          newX + width > platform.x &&
-          newX < platform.x + platform.width &&
-          newY + height > platform.y &&
-          prev.y + height <= platform.y
-        ) {
-          newY = platform.y - height;
-          newVy = 0;
-        }
-      }
-      
-      // Check game object collisions
-      for (const obj of gameObjects) {
-        if (
-          !obj.collected &&
-          newX + width > obj.x &&
-          newX < obj.x + obj.width &&
-          newY + height > obj.y &&
-          newY < obj.y + obj.height
-        ) {
+        if (obj && !obj.collected) {
           // Collect item in the next frame to avoid state updates during render
           setTimeout(() => handleItemCollection(obj), 0);
         }
       }
+    }
+    
+    // Check if player has reached the exit
+    const exitPlatform = platformBodiesRef.current.find(p => p.label === 'platform-exit');
+    if (exitPlatform) {
+      const isOnExit = Matter.Collision.collides(playerBody, exitPlatform, null);
       
-      // Boundary checks
-      if (newX < 0) newX = 0;
-      if (newX + width > gameWidth) newX = gameWidth - width;
-      
-      // Check if player fell off the screen
-      if (newY < -50) {
-        // Reset position
-        newX = 50;
-        newY = 10;
-        newVx = 0;
-        newVy = 0;
-      }
-      
-      // Check if level is complete
-      if (reachedExit) {
+      if (isOnExit && gameObjects.every(obj => obj.collected)) {
         setTimeout(() => {
           setGameState('gameOver');
           setGameProgress(100);
         }, 0);
       }
-      
-      // Update jumping state
-      const isJumping = !onGround;
-      
-      return {
-        x: newX,
-        y: newY,
-        vx: newVx,
-        vy: newVy,
-        width: width,
-        height: height,
-        isJumping,
-        isDucking: prev.isDucking
-      };
-    });
+    }
+    
+    // Check if player fell off the screen
+    if (playerBody.position.y > gameHeight + 100) {
+      // Reset position
+      Matter.Body.setPosition(playerBody, { x: 50 + player.width / 2, y: gameHeight - 10 - player.height / 2 });
+      Matter.Body.setVelocity(playerBody, { x: 0, y: 0 });
+    }
     
     // Update game progress based on collected items
     setGameProgress(prev => {
       const totalItems = gameObjects.length;
       const collectedItems = gameObjects.filter(obj => obj.collected).length;
-      return (collectedItems / totalItems) * 100;
+      return totalItems > 0 ? (collectedItems / totalItems) * 100 : 0;
     });
     
     // Continue animation loop if game is still active
     if (gameState === 'playing') {
       requestRef.current = requestAnimationFrame(gameLoop);
     }
-  }, [platforms, gameObjects, handleItemCollection, gameState, gameWidth]);
+  }, [gameObjects, handleItemCollection, gameState, gameHeight]);
 
   // Start/stop game loop based on game state
   useEffect(() => {
@@ -397,6 +496,31 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
     };
   }, [gameState, gameLoop]);
 
+  // Create/update physics bodies when platforms or objects change
+  useEffect(() => {
+    if (gameState === 'playing' && engineRef.current) {
+      createPlatformBodies(platforms);
+    }
+  }, [platforms, gameState, createPlatformBodies]);
+
+  useEffect(() => {
+    if (gameState === 'playing' && engineRef.current) {
+      createObjectBodies(gameObjects);
+    }
+  }, [gameObjects, gameState, createObjectBodies]);
+
+  // Clean up physics engine on unmount
+  useEffect(() => {
+    return () => {
+      if (engineRef.current) {
+        Matter.Engine.clear(engineRef.current);
+        engineRef.current = null;
+      }
+      
+      cancelAnimationFrame(requestRef.current);
+    };
+  }, []);
+
   return {
     gameState,
     setGameState,
@@ -408,6 +532,7 @@ export const useGameLogic = ({ onItemCollect }: UseGameLogicProps) => {
     dialogOpen,
     currentItem,
     handleDialogClose,
-    initializeGame
+    initializeGame,
+    physicsEngine: engineRef.current
   };
 };
