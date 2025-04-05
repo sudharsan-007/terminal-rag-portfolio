@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import Layout from '@/components/Layout';
 import ResumeContent from '@/components/resume/ResumeContent';
 import { Briefcase, GraduationCap, Star, Download } from 'lucide-react';
 import resumeData from '@/data/resumeData';
@@ -10,6 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { motion } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ResumeGame from '@/components/resume/ResumeGame';
 
 const Resume = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -19,6 +19,7 @@ const Resume = () => {
     education: 0,
     awards: 0
   });
+  const [showGame, setShowGame] = useState(true);
   
   React.useEffect(() => {
     // Simulate loading to add a smooth entrance effect
@@ -130,9 +131,16 @@ const Resume = () => {
                 
                 <Separator className="my-4 bg-terminal-text/20" />
                 
-                <div className="overflow-x-auto">
-                  <ResumeContent activeSection={activeSection} />
-                </div>
+                {showGame ? (
+                  <ResumeGame 
+                    onItemCollect={handleItemCollected}
+                    setShowGame={setShowGame}
+                  />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <ResumeContent activeSection={activeSection} />
+                  </div>
+                )}
               </div>
               
               <div className="text-terminal-text">
