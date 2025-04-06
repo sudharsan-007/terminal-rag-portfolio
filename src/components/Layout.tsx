@@ -1,8 +1,6 @@
-
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import RetroTerminalBackground from './RetroTerminalBackground';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,9 +9,6 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="h-screen flex flex-col bg-terminal-bg text-terminal-text overflow-hidden relative">
-      {/* RetroTerminalBackground added here, behind all content */}
-      <RetroTerminalBackground />
-      
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col h-full relative z-10">
         <Header />
         <main className="flex-grow overflow-hidden py-4">
