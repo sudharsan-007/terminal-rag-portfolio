@@ -95,7 +95,7 @@ const CommitHistory = () => {
   
   useEffect(() => {
     const linkedinImg = new Image();
-    linkedinImg.src = '/lovable-uploads/97b98287-d221-43f3-af04-ec77e0dbd11e.png';
+    linkedinImg.src = '/assets/logos/linkedin-logo.png';
     linkedinImg.onload = () => {
       logosRef.current.linkedin.image = linkedinImg;
       logosRef.current.linkedin.aspectRatio = linkedinImg.width / linkedinImg.height;
@@ -105,7 +105,7 @@ const CommitHistory = () => {
     };
     
     const gmailImg = new Image();
-    gmailImg.src = '/lovable-uploads/67a9ec88-cbf4-46e7-b87b-f82b27e236a8.png';
+    gmailImg.src = '/assets/logos/gmail-logo.webp';
     gmailImg.onload = () => {
       logosRef.current.gmail.image = gmailImg;
       logosRef.current.gmail.aspectRatio = gmailImg.width / gmailImg.height;
@@ -115,7 +115,7 @@ const CommitHistory = () => {
     };
     
     const githubImg = new Image();
-    githubImg.src = '/lovable-uploads/ba4ca26b-e5a7-4709-8f7f-64736f257f75.png';
+    githubImg.src = '/assets/logos/github-logo.png';
     githubImg.onload = () => {
       logosRef.current.github.image = githubImg;
       logosRef.current.github.aspectRatio = githubImg.width / githubImg.height;

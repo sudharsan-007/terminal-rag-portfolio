@@ -1,4 +1,3 @@
-
 # Vector Databases: Understanding the Magic of Similarity Search
 
 Have you ever wondered how Spotify knows exactly what music to recommend? Or how Google can find images similar to yours? The secret lies in vector databases – a fascinating technology that's revolutionizing how we handle and search through data.
@@ -9,7 +8,7 @@ At its heart, a vector database transforms everything – images, text, sound, o
 
 ## How It Actually Works
 
-![Vector Database Process](/lovable-uploads/9dd8c316-db03-4cf6-a185-7e47d12ffbec.png)
+![Vector Database Process](/src/data/blog/images/vector-database-process.png)
 
 The magic happens in three main steps:
 

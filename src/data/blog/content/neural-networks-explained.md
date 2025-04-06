@@ -1,4 +1,3 @@
-
 # Neural Networks Explained: Beyond the Black Box
 
 Neural networks have transformed AI, but they're often treated as mysterious black boxes. Let's demystify how they actually work and make decisions.
@@ -10,7 +9,7 @@ At their core, neural networks consist of:
 - **Connections**: Weighted pathways between neurons
 - **Layers**: Organized groups of neurons
 
-![Neural Network Architecture](/lovable-uploads/38d5efd1-774c-4895-92a4-a3a22e640245.png)
+![Neural Network Architecture](/src/data/blog/images/neural-network-architecture.png)
 
 ## How Neural Networks Learn
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,8 +12,8 @@ const QrCodeDisplay = () => {
       <div className="mb-6 relative">
         <div className="relative overflow-hidden rounded-md" style={{ width: '220px', height: '220px' }}>
           <img 
-            src="/lovable-uploads/97b98287-d221-43f3-af04-ec77e0dbd11e.png" 
-            alt="LinkedIn Logo"
+            src="/assets/qr/linkedin-qr.png" 
+            alt="LinkedIn QR Code"
             className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
             style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }}
           />
