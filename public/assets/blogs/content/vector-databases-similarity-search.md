@@ -8,7 +8,7 @@ At its heart, a vector database transforms everything – images, text, sound, o
 
 ## How It Actually Works
 
-![Vector Database Process](/src/data/blog/images/vector-database-process.png)
+![Vector Database Process](/assets/blogs/images/vector-database-diagram.png)
 
 The magic happens in three main steps:
 

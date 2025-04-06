@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -100,16 +99,6 @@ const BlogPost: React.FC = () => {
                 <BlogTags tags={post.tags} />
               </div>
             )}
-            
-            {post.coverImage && (
-              <div className="mb-6">
-                <img 
-                  src={post.coverImage}
-                  alt={post.title}
-                  className="w-full h-auto rounded-md object-cover"
-                />
-              </div>
-            )}
           </header>
           
           <div className="prose prose-invert prose-pre:bg-terminal-navy/80 prose-pre:border prose-pre:border-terminal-text/30 prose-pre:rounded-md prose-code:text-terminal-accent1 prose-headings:text-terminal-text prose-a:text-terminal-accent1 hover:prose-a:text-terminal-accent1/80 max-w-none">
@@ -124,12 +113,37 @@ const BlogPost: React.FC = () => {
                 <div className="h-4 bg-terminal-text/10 rounded w-3/4 mb-4"></div>
               </div>
             ) : (
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw, rehypeHighlight]}
-              >
-                {post.content}
-              </ReactMarkdown>
+              <>
+                {/* Debug info */}
+                <div className="mb-4 p-2 bg-terminal-navy/50 rounded text-xs font-mono">
+                  <p className="mb-1">Post slug: {slug}</p>
+                  <p className="mb-1">Content length: {post.content?.length || 0} chars</p>
+                  <p className="mb-1">Cover image: {post.coverImage}</p>
+                </div>
+                
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                  components={{
+                    img: ({ node, src, alt, ...props }) => {
+                      console.log("Image in markdown:", { src, alt });
+                      return (
+                        <div className="my-4">
+                          <img 
+                            src={src} 
+                            alt={alt || "Blog image"} 
+                            className="rounded-md max-w-full h-auto"
+                            {...props}
+                          />
+                          <p className="text-xs text-terminal-text/60 mt-1">Image path: {src}</p>
+                        </div>
+                      );
+                    }
+                  }}
+                >
+                  {post.content}
+                </ReactMarkdown>
+              </>
             )}
           </div>
         </article>

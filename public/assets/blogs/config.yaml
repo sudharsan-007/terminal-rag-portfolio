@@ -1,4 +1,3 @@
-
 posts:
   - id: "1"
     slug: "vector-databases-similarity-search"
@@ -6,7 +5,7 @@ posts:
     date: "March 5, 2025"
     tags: ["AI", "Machine Learning", "Databases", "Vectors"]
     readingTime: 8
-    coverImage: "/lovable-uploads/9dd8c316-db03-4cf6-a185-7e47d12ffbec.png"
+    coverImage: "/assets/blogs/images/vector-database-diagram.png"
     contentFile: "vector-databases-similarity-search.md"
 
   - id: "2"
@@ -22,7 +21,7 @@ posts:
     title: "Neural Networks Explained: Beyond the Black Box"
     date: "January 15, 2025"
     tags: ["Neural Networks", "Deep Learning", "AI"]
-    coverImage: "/lovable-uploads/38d5efd1-774c-4895-92a4-a3a22e640245.png"
+    coverImage: "/assets/blogs/images/neural-network-diagram.png"
     readingTime: 12
     contentFile: "neural-networks-explained.md"
 
@@ -39,7 +38,6 @@ posts:
     title: "RLHF: Aligning AI Systems with Human Values"
     date: "November 18, 2024"
     tags: ["RLHF", "AI Alignment", "Reinforcement Learning"]
-    coverImage: "/lovable-uploads/08fccf80-81d4-46a4-ada4-326119159ad8.png"
     readingTime: 9
     contentFile: "reinforcement-learning-from-human-feedback.md"
 

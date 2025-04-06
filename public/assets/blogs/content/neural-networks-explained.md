@@ -1,15 +1,13 @@
 # Neural Networks Explained: Beyond the Black Box
 
-Neural networks have transformed AI, but they're often treated as mysterious black boxes. Let's demystify how they actually work and make decisions.
+Neural networks have transformed AI, but they're often treated as mysterious black boxes. Let's demystify how they actually work.
 
-## The Building Blocks
+## Basic Components
 
-At their core, neural networks consist of:
-- **Neurons**: Simple computational units
-- **Connections**: Weighted pathways between neurons
+- **Neurons**: Basic processing units
 - **Layers**: Organized groups of neurons
 
-![Neural Network Architecture](/src/data/blog/images/neural-network-architecture.png)
+![Neural Network Architecture](/assets/blogs/images/neural-network-diagram.png)
 
 ## How Neural Networks Learn
 
