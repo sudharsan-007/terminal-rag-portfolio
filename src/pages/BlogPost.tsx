@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -6,11 +5,13 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { motion } from 'framer-motion';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import BlogTags from '@/components/blog/BlogTags';
 import BlogCard from '@/components/blog/BlogCard';
 import { getBlogPostBySlug, getRelatedPosts, loadFullBlogPost } from '@/data/blogData';
+import { BlogPost as BlogPostType } from '@/types/blog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const BlogPost: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -18,6 +19,8 @@ const BlogPost: React.FC = () => {
   const [post, setPost] = useState(getBlogPostBySlug(slug || ''));
   const [isLoading, setIsLoading] = useState(true);
   const relatedPosts = post ? getRelatedPosts(post.id) : [];
+  const [isLoaded, setIsLoaded] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!post) {
@@ -37,6 +40,7 @@ const BlogPost: React.FC = () => {
         console.error("Error loading blog post content:", error);
       } finally {
         setIsLoading(false);
+        setIsLoaded(true);
       }
     };
 
@@ -59,60 +63,49 @@ const BlogPost: React.FC = () => {
   if (!post) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-terminal-bg">
-      <Header />
-      
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="flex items-center gap-4 mb-6">
-          <Link to="/blog" className="inline-flex items-center text-terminal-text hover:text-terminal-accent1">
-            <ArrowLeft size={20} className="mr-2" />
-            Back to all posts
-          </Link>
-          <button 
-            onClick={() => navigate('/blog')}
-            className="px-4 py-2 border border-terminal-text text-terminal-text rounded hover:bg-terminal-text/10"
-          >
-            [ESC] Close
-          </button>
-        </div>
-        
-        <article className="terminal-window overflow-visible p-6 md:p-8">
-          <header className="mb-8">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 text-terminal-accent1">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isLoaded ? 1 : 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col h-full"
+    >
+      <div className="terminal-window flex-grow overflow-auto">
+        <article className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
+          <header className={`${isMobile ? 'mb-4' : 'mb-8'}`}>
+            <button
+              onClick={() => navigate('/blog')}
+              className="px-3 py-1.5 mb-4 border border-terminal-text/30 rounded text-sm text-terminal-text/70 hover:bg-terminal-text/10 hover:text-terminal-text transition-colors inline-flex items-center"
+              aria-label="Press ESC to go back"
+            >
+              <ArrowLeft size={16} className="mr-1.5" /> Back to blogs
+            </button>
+            
+            <h1 className={`${isMobile ? 'text-xl' : 'text-2xl md:text-3xl lg:text-4xl'} font-bold ${isMobile ? 'mb-2' : 'mb-4'} text-terminal-accent1`}>
               {post.title}
             </h1>
             
             <div className="flex flex-wrap gap-4 text-sm text-terminal-text/70 mb-4">
               <div className="flex items-center gap-1">
-                <Calendar size={16} />
-                <span>{post.date}</span>
+                <Calendar size={isMobile ? 14 : 16} />
+                <span className={isMobile ? 'text-xs' : 'text-sm'}>{post.date}</span>
               </div>
               {post.readingTime && (
                 <div className="flex items-center gap-1">
-                  <Clock size={16} />
-                  <span>{post.readingTime} min read</span>
+                  <Clock size={isMobile ? 14 : 16} />
+                  <span className={isMobile ? 'text-xs' : 'text-sm'}>{post.readingTime} min read</span>
                 </div>
               )}
             </div>
             
             {post.tags.length > 0 && (
-              <div className="mb-6">
+              <div className={`${isMobile ? 'mb-3' : 'mb-6'}`}>
                 <BlogTags tags={post.tags} />
-              </div>
-            )}
-            
-            {post.coverImage && (
-              <div className="mb-6">
-                <img 
-                  src={post.coverImage}
-                  alt={post.title}
-                  className="w-full h-auto rounded-md object-cover"
-                />
               </div>
             )}
           </header>
           
-          <div className="prose prose-invert prose-pre:bg-terminal-navy/80 prose-pre:border prose-pre:border-terminal-text/30 prose-pre:rounded-md prose-code:text-terminal-accent1 prose-headings:text-terminal-text prose-a:text-terminal-accent1 hover:prose-a:text-terminal-accent1/80 max-w-none">
+          <div className={`prose prose-invert ${isMobile ? 'prose-sm' : ''} prose-pre:bg-terminal-navy/80 prose-pre:border prose-pre:border-terminal-text/30 prose-pre:rounded-md prose-code:text-terminal-accent1 prose-headings:text-terminal-text prose-a:text-terminal-accent1 hover:prose-a:text-terminal-accent1/80 max-w-none`}>
             {isLoading ? (
               <div className="animate-pulse">
                 <div className="h-4 bg-terminal-text/10 rounded w-3/4 mb-4"></div>
@@ -124,19 +117,44 @@ const BlogPost: React.FC = () => {
                 <div className="h-4 bg-terminal-text/10 rounded w-3/4 mb-4"></div>
               </div>
             ) : (
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw, rehypeHighlight]}
-              >
-                {post.content}
-              </ReactMarkdown>
+              <>
+                {/* Debug info */}
+                <div className="mb-4 p-2 bg-terminal-navy/50 rounded text-xs font-mono">
+                  <p className="mb-1">Post slug: {slug}</p>
+                  <p className="mb-1">Content length: {post.content?.length || 0} chars</p>
+                  <p className="mb-1">Cover image: {post.coverImage}</p>
+                </div>
+                
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                  components={{
+                    img: ({ node, src, alt, ...props }) => {
+                      console.log("Image in markdown:", { src, alt });
+                      return (
+                        <div className="my-4">
+                          <img 
+                            src={src} 
+                            alt={alt || "Blog image"} 
+                            className="rounded-md max-w-full h-auto"
+                            {...props}
+                          />
+                          <p className="text-xs text-terminal-text/60 mt-1">Image path: {src}</p>
+                        </div>
+                      );
+                    }
+                  }}
+                >
+                  {post.content}
+                </ReactMarkdown>
+              </>
             )}
           </div>
         </article>
         
         {relatedPosts.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-xl font-bold text-terminal-text mb-6">Related Posts</h2>
+          <section className={`${isMobile ? 'px-4 pb-4' : 'px-6 md:px-8 pb-6'}`}>
+            <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold text-terminal-text ${isMobile ? 'mb-3' : 'mb-6'}`}>Related Posts</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedPosts.map((relatedPost) => (
                 <div key={relatedPost.id} onClick={() => navigate(`/blog/${relatedPost.slug}`)}>
@@ -146,19 +164,8 @@ const BlogPost: React.FC = () => {
             </div>
           </section>
         )}
-        
-        {/* Navigation help similar to Projects page */}
-        <div className="mt-8 border-t border-terminal-text/30 pt-4 text-terminal-text/70 text-sm">
-          <div className="flex justify-between">
-            <div>↑/↓: Navigate related posts</div>
-            <div>Enter: Open post</div>
-            <div>ESC: Return to blog list</div>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </motion.div>
   );
 };
 

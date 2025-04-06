@@ -1,75 +1,74 @@
-
-import React from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import ContactForm from '@/components/contact/ContactForm';
 import QrCodeDisplay from '@/components/contact/QrCodeDisplay';
 import CommitHistory from '@/components/contact/CommitHistory';
-import { motion } from 'framer-motion';
 
 const Contact = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    // Set mounted flag
+    isMounted.current = true;
+    
+    const timer = setTimeout(() => {
+      if (isMounted.current) {
+        setIsLoaded(true);
+      }
+    }, 200);
+    
+    // Cleanup
+    return () => {
+      clearTimeout(timer);
+      isMounted.current = false;
+    };
+  }, []);
+
   return (
-    <div className="h-screen flex flex-col bg-terminal-bg overflow-hidden">
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto flex flex-col h-screen px-4"
-      >
-        <Header />
-        
-        <main className="flex-grow flex flex-col mt-4 mb-8 overflow-hidden">
-          <div className="mb-4">
-            <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-              sudharsan@portfolio:~/contact
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="terminal-window p-4 h-full"
-            >
-              <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-                <span className="terminal-prompt">Send Message</span>
-              </h2>
-              <ContactForm />
-            </motion.div>
-            
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="terminal-window p-4 h-full"
-            >
-              <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-                <span className="terminal-prompt">Connect on LinkedIn</span>
-              </h2>
-              <QrCodeDisplay />
-            </motion.div>
-          </div>
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="terminal-window p-4"
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isLoaded ? 1 : 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col h-full"
+    >
+      <div className="terminal-window flex-grow flex flex-col overflow-auto p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <motion.div
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -20, opacity: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            className="h-full"
           >
-            <h2 className="text-xl text-terminal-accent1 mb-4 border-b border-terminal-text/30 pb-2">
-              <span className="terminal-prompt">Connect with me</span>
-            </h2>
+            <ContactForm />
+          </motion.div>
+          
+          <motion.div
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 20, opacity: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            className="h-full"
+          >
+            <QrCodeDisplay />
+          </motion.div>
+        </div>
+        
+        {isLoaded && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            className="mb-4 flex-shrink-0"
+          >
             <CommitHistory />
           </motion.div>
-        </main>
-        
-        <Footer />
-      </motion.div>
-      
-      {/* Background effects */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
-    </div>
+        )}
+      </div>
+    </motion.div>
   );
 };
 

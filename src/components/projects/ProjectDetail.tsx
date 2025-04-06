@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Project } from '@/types/project';
 
@@ -49,16 +48,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ project, onClose }) => {
             </li>
           ))}
         </ul>
-      </div>
-      
-      {/* Navigation help */}
-      <div className="mt-auto border-t border-terminal-text/30 pt-4 text-terminal-text/70 text-sm">
-        <div className="flex justify-between">
-          <div>↑/↓: Navigate projects</div>
-          <div>Enter: View details</div>
-          <div>ESC: Close details</div>
-          <div>ALT+[key]: Access menu items</div>
-        </div>
       </div>
     </div>
   );

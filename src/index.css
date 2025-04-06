@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @tailwind base;
@@ -72,8 +71,9 @@
 
 @layer components {
   .terminal-window {
-    @apply relative border border-terminal-text rounded-lg p-4 bg-terminal-navy/60 backdrop-blur-sm overflow-hidden;
+    @apply relative border border-terminal-text rounded-lg p-4 bg-terminal-navy/60 backdrop-blur-sm;
     box-shadow: 0 0 15px rgba(74, 255, 145, 0.3);
+    width: 100%;
   }
   
   .terminal-input {

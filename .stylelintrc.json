@@ -1,0 +1,22 @@
+{
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-tailwindcss"
+  ],
+  "rules": {
+    "at-rule-no-unknown": null,
+    "no-descending-specificity": null,
+    "function-no-unknown": null,
+    "declaration-block-no-duplicate-properties": true,
+    "declaration-no-important": true,
+    "selector-max-id": 1,
+    "selector-class-pattern": "^[a-z][a-zA-Z0-9]*$",
+    "color-named": "never",
+    "font-weight-notation": "numeric",
+    "shorthand-property-no-redundant-values": true,
+    "comment-no-empty": true,
+    "no-duplicate-selectors": true,
+    "no-empty-source": true,
+    "max-nesting-depth": 3
+  }
+} 

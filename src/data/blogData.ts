@@ -1,42 +1,43 @@
-
 import { BlogPost } from "@/types/blog";
-import fs from 'fs';
-import path from 'path';
 import { parse } from 'yaml';
 
-// Import the YAML content as a string
-import yamlConfigString from './blog/config.yaml?raw';
+// We will fetch the YAML config from the public directory
+let yamlConfig: any = { posts: [] };
 
-// Parse the YAML string
-const yamlConfig = parse(yamlConfigString);
-
-// Create a mocked fs function for client-side use
-const readMarkdownFile = (fileName: string): string => {
-  // In a real environment with SSR or API, we'd read directly from the filesystem
-  // For client-side only, we'll use dynamic imports or fetch
-  
-  // This is a simplified mock implementation
+// Initialize the blog data by fetching the config
+const initBlogData = async () => {
   try {
-    // In production, you'd use a strategy like dynamic imports or API calls
-    // For simplicity in the demo, we'll return placeholder content
-    if (fileName === 'vector-databases-similarity-search.md') {
-      return require('./blog/content/vector-databases-similarity-search.md');
+    console.log("Fetching blog config from /assets/blogs/config.yaml");
+    const response = await fetch('/assets/blogs/config.yaml');
+    
+    if (!response.ok) {
+      console.error(`Failed to load blog config: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to load blog config: ${response.statusText}`);
     }
-    return "Content not available in client-side rendering. In a production app, this would be handled by API calls or SSR.";
+    
+    const yamlText = await response.text();
+    console.log(`Config loaded, length: ${yamlText.length} chars`);
+    
+    // Parse the YAML string
+    yamlConfig = parse(yamlText);
+    console.log("Parsed YAML config:", yamlConfig.posts?.length || 0, "posts");
   } catch (error) {
-    console.error(`Error loading markdown file: ${fileName}`, error);
-    return "# Error loading content";
+    console.error("Error initializing blog data:", error);
   }
 };
+
+// Call init function immediately
+initBlogData();
 
 // Process the blog posts from the YAML config
 export const getBlogPosts = (): BlogPost[] => {
   try {
+    if (!yamlConfig.posts || yamlConfig.posts.length === 0) {
+      console.warn("Blog posts not loaded yet. The config may still be loading.");
+      return [];
+    }
+
     const posts = yamlConfig.posts.map((post: any) => {
-      // In a real environment, we'd load content from files
-      // Here we'll use the mock function
-      // const content = readMarkdownFile(post.contentFile);
-      
       const excerpt = post.excerpt || generateExcerptFromContent(post.contentFile);
       
       return {
@@ -78,12 +79,6 @@ const generateExcerptFromContent = (contentFile: string): string => {
     // Return the excerpt or a default excerpt if not found
     return excerpts[contentFile] || 
       'This article explores innovative aspects of artificial intelligence and machine learning...';
-    
-    // In a real implementation, we would:
-    // 1. Read the markdown file
-    // 2. Parse the first paragraph
-    // 3. Truncate to around 100 characters
-    // 4. Add ellipsis
   } catch (error) {
     console.error(`Error generating excerpt for ${contentFile}:`, error);
     return 'Explore the fascinating world of AI and machine learning...';
@@ -92,16 +87,25 @@ const generateExcerptFromContent = (contentFile: string): string => {
 
 // Get content for a specific blog post
 export const getBlogContent = async (contentFile: string): Promise<string> => {
-  // In a real app, this would fetch the markdown file
-  // For this demo, we'll return mock content
-  
-  // Placeholder implementation
   try {
-    // In production: return await fetch(`/api/blog/content/${contentFile}`).then(res => res.text());
-    return "# Content would be loaded from " + contentFile + "\n\nIn a production environment, this content would be loaded from the markdown file.";
+    console.log(`Fetching blog content: /assets/blogs/content/${contentFile}`);
+    
+    // Fetch the markdown file from the public directory
+    const response = await fetch(`/assets/blogs/content/${contentFile}`);
+    
+    if (!response.ok) {
+      console.error(`Failed to load blog content: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to load blog content: ${response.statusText}`);
+    }
+    
+    const content = await response.text();
+    console.log(`Content loaded, length: ${content.length} chars`);
+    console.log(`Content preview: ${content.substring(0, 200)}...`);
+    
+    return content;
   } catch (error) {
     console.error(`Error loading blog content for ${contentFile}:`, error);
-    return "# Error loading content";
+    return `# Error loading content\n\nSorry, there was an error loading this content.\n\nError details: ${error instanceof Error ? error.message : String(error)}`;
   }
 };
 

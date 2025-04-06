@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import BlogCard from './BlogCard';
 import { BlogPost } from '@/types/blog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BlogListProps {
   posts: BlogPost[];
@@ -27,21 +27,17 @@ const BlogList: React.FC<BlogListProps> = ({
 
   if (posts.length === 0) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-terminal-text">No posts found matching your search.</p>
+      <div className={`${isMobile ? 'p-3' : 'p-6'} text-center`}>
+        <p className={`${isMobile ? 'text-sm' : 'text-base'} text-terminal-text`}>No posts found matching your search.</p>
       </div>
     );
   }
 
-  // If on mobile, we disable the selected highlighting and let users tap directly
+  // Handle card selection and navigation
   const handleCardSelect = (index: number) => {
-    if (isMobile) {
-      // On mobile, clicking directly navigates to the post
-      handleBlogClick(posts[index].slug);
-    } else {
-      // On desktop, clicking selects the post
-      setSelectedPostIndex(index);
-    }
+    setSelectedPostIndex(index);
+    // Navigate to blog post when clicked
+    handleBlogClick(posts[index].slug);
   };
 
   return (
@@ -53,29 +49,31 @@ const BlogList: React.FC<BlogListProps> = ({
               key={post.id} 
               id={`blog-post-${index}`}
               onClick={() => handleCardSelect(index)}
+              className="cursor-pointer"
             >
               <BlogCard 
                 post={post} 
                 viewMode="grid" 
-                isSelected={!isMobile && selectedPostIndex === index}
-                onClick={() => isMobile ? handleBlogClick(post.slug) : undefined}
+                isSelected={selectedPostIndex === index}
+                onClick={() => handleCardSelect(index)}
               />
             </div>
           ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className={`flex flex-col ${isMobile ? 'gap-2' : 'gap-4'}`}>
           {posts.map((post, index) => (
             <div 
               key={post.id} 
               id={`blog-post-${index}`}
               onClick={() => handleCardSelect(index)}
+              className="cursor-pointer"
             >
               <BlogCard 
                 post={post} 
                 viewMode="list" 
-                isSelected={!isMobile && selectedPostIndex === index}
-                onClick={() => isMobile ? handleBlogClick(post.slug) : undefined}
+                isSelected={selectedPostIndex === index}
+                onClick={() => handleCardSelect(index)}
               />
             </div>
           ))}

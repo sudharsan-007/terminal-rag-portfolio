@@ -1,6 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 // Simplified ASCII art for "SUDU"
 const desktopAscii = `
@@ -12,12 +12,20 @@ const desktopAscii = `
  ╚══════╝ ╚═════╝ ╚═════╝  ╚═════╝ 
 `;
 
-// Simplified ASCII art for mobile
+// Improved compact ASCII art for mobile
 const mobileAscii = `
  ███████╗██╗   ██╗██████╗ ██╗   ██╗
+ ██╔════╝██║   ██║██╔══██╗██║   ██║
+ ███████╗██║   ██║██║  ██║██║   ██║
+ ╚════██║██║   ██║██║  ██║██║   ██║
+ ███████║╚██████╔╝██████╔╝╚██████╔╝
 `;
 
-const AsciiLogo: React.FC = () => {
+interface AsciiLogoProps {
+  className?: string;
+}
+
+const AsciiLogo: React.FC<AsciiLogoProps> = ({ className }) => {
   const isMobile = useIsMobile();
   const [displayAscii, setDisplayAscii] = useState<string>('');
   const [isLoaded, setIsLoaded] = useState(false);
@@ -33,9 +41,9 @@ const AsciiLogo: React.FC = () => {
 
   return (
     <div 
-      className={`w-full flex justify-center my-8 transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+      className={cn(`w-full flex justify-center my-6 transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`, className)}
     >
-      <pre className="ascii-art text-terminal-text text-xs sm:text-sm md:text-base whitespace-pre overflow-x-auto max-w-full">
+      <pre className="ascii-art text-terminal-text text-xs sm:text-sm md:text-base whitespace-pre overflow-x-auto max-w-full px-2 text-center font-mono">
         {displayAscii}
       </pre>
     </div>
