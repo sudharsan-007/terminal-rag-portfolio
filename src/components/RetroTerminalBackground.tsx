@@ -186,13 +186,15 @@ const RetroTerminalBackground: React.FC = () => {
         style={{ zIndex: -6 }} 
       />
       
-      {/* Animation styling */}
-      <style jsx>{`
-        @keyframes moveStaticLine {
-          from { transform: translateX(-100%); }
-          to { transform: translateX(100%); }
-        }
-      `}</style>
+      {/* Animation styling - using regular style tag instead of style jsx */}
+      <style>
+        {`
+          @keyframes moveStaticLine {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+          }
+        `}
+      </style>
     </div>
   );
 };
