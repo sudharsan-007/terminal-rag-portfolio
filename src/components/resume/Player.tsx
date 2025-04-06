@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
 
@@ -13,9 +12,18 @@ interface PlayerProps {
 
 const Player: React.FC<PlayerProps> = ({ x, y, isDucking, isJumping, containerRef, pixiApp }) => {
   const playerRef = useRef<PIXI.Graphics | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+  
+  // Set mounted ref on mount and cleanup on unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
   
   useEffect(() => {
-    if (!pixiApp) return;
+    if (!pixiApp || !isMountedRef.current) return;
     
     // Create player if it doesn't exist
     if (!playerRef.current) {
@@ -50,8 +58,16 @@ const Player: React.FC<PlayerProps> = ({ x, y, isDucking, isJumping, containerRe
     player.scale.set(playerScaleX, playerScaleY);
     
     return () => {
-      if (playerRef.current && pixiApp) {
-        pixiApp.stage.removeChild(playerRef.current);
+      // Add safety checks to prevent errors when unmounting
+      if (playerRef.current && pixiApp && pixiApp.stage) {
+        try {
+          // Check if the application is still valid
+          if (!pixiApp.stage.destroyed) {
+            pixiApp.stage.removeChild(playerRef.current);
+          }
+        } catch (e) {
+          console.warn('Could not remove player from stage:', e);
+        }
         playerRef.current = null;
       }
     };

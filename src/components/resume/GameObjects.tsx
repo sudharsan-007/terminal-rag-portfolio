@@ -1,15 +1,15 @@
-
 import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
 import { Briefcase, GraduationCap, Star } from 'lucide-react';
 
+// Define the interfaces directly to avoid import issues
 interface GameObject {
   id: string;
   x: number;
   y: number;
   width: number;
   height: number;
-  type: 'experience' | 'education' | 'awards';
+  type: string;
   collected: boolean;
 }
 
@@ -18,7 +18,7 @@ interface Platform {
   y: number;
   width: number;
   height: number;
-  type: 'normal' | 'obstacle' | 'exit';
+  type: string;
 }
 
 interface GameObjectsProps {
@@ -29,142 +29,109 @@ interface GameObjectsProps {
 }
 
 const GameObjects: React.FC<GameObjectsProps> = ({ gameObjects, platforms, containerRef, pixiApp }) => {
-  const platformsRef = useRef<PIXI.Graphics[]>([]);
-  const objectsRef = useRef<PIXI.Graphics[]>([]);
+  const objectsContainerRef = useRef<PIXI.Container | null>(null);
+  const platformsContainerRef = useRef<PIXI.Container | null>(null);
+  const isMountedRef = useRef<boolean>(true);
   
-  // Create and update platforms
+  // Set mounted ref on mount and cleanup on unmount
   useEffect(() => {
-    if (!pixiApp) return;
-    
-    // Clear previous platforms
-    platformsRef.current.forEach(platform => {
-      pixiApp.stage.removeChild(platform);
-    });
-    platformsRef.current = [];
-    
-    // Create new platforms
-    platforms.forEach((platform, index) => {
-      const graphics = new PIXI.Graphics();
-      
-      let fillColor = 0x808080; // Default gray
-      if (platform.type === 'obstacle') {
-        fillColor = 0xF44336; // Red
-      } else if (platform.type === 'exit') {
-        fillColor = 0x4CAF50; // Green
-      }
-      
-      graphics.beginFill(fillColor);
-      graphics.drawRect(0, 0, platform.width, platform.height);
-      graphics.endFill();
-      
-      if (platform.type === 'exit') {
-        const text = new PIXI.Text('EXIT', {
-          fontFamily: 'Arial',
-          fontSize: 12,
-          fill: 0xFFFFFF,
-          align: 'center',
-        });
-        text.anchor.set(0.5);
-        text.x = platform.width / 2;
-        text.y = platform.height / 2;
-        graphics.addChild(text);
-      }
-      
-      graphics.x = platform.x;
-      graphics.y = pixiApp.screen.height - platform.y - platform.height;
-      
-      pixiApp.stage.addChild(graphics);
-      platformsRef.current.push(graphics);
-    });
-    
+    isMountedRef.current = true;
     return () => {
-      if (pixiApp) {
-        platformsRef.current.forEach(platform => {
-          pixiApp.stage.removeChild(platform);
-        });
-        platformsRef.current = [];
-      }
+      isMountedRef.current = false;
     };
-  }, [platforms, pixiApp]);
-  
-  // Create and update game objects
+  }, []);
+
+  // Handle objects
   useEffect(() => {
-    if (!pixiApp) return;
-    
-    // Clear previous objects
-    objectsRef.current.forEach(obj => {
-      pixiApp.stage.removeChild(obj);
-    });
-    objectsRef.current = [];
-    
-    // Create new objects
+    if (!pixiApp || !isMountedRef.current) return;
+
+    // Create containers if they don't exist
+    if (!objectsContainerRef.current) {
+      const container = new PIXI.Container();
+      objectsContainerRef.current = container;
+      pixiApp.stage.addChild(container);
+    }
+
+    // Clear existing objects
+    const container = objectsContainerRef.current;
+    container.removeChildren();
+
+    // Add game objects
     gameObjects.forEach(obj => {
-      if (obj.collected) return;
+      const sprite = new PIXI.Graphics();
       
-      const graphics = new PIXI.Graphics();
-      
-      let fillColor;
-      switch (obj.type) {
-        case 'experience':
-          fillColor = 0x2196F3; // Blue
-          break;
-        case 'education':
-          fillColor = 0x4CAF50; // Green
-          break;
-        case 'awards':
-          fillColor = 0xFFC107; // Yellow
-          break;
-        default:
-          fillColor = 0x9C27B0; // Purple
+      if (obj.type === 'obstacle') {
+        sprite.beginFill(0xFF5252); // Red
+        sprite.drawRect(0, 0, obj.width, obj.height);
+      } else {
+        sprite.beginFill(0x4AFF91); // Green
+        sprite.drawCircle(obj.width / 2, obj.height / 2, obj.width / 2);
       }
       
-      graphics.beginFill(fillColor, 0.7);
-      graphics.drawRect(0, 0, obj.width, obj.height);
-      graphics.endFill();
+      sprite.endFill();
+      sprite.x = obj.x;
+      sprite.y = pixiApp.screen.height - obj.y - obj.height;
       
-      // Add icon
-      let iconText = '?';
-      switch (obj.type) {
-        case 'experience':
-          iconText = '💼';
-          break;
-        case 'education':
-          iconText = '🎓';
-          break;
-        case 'awards':
-          iconText = '⭐';
-          break;
-      }
-      
-      const text = new PIXI.Text(iconText, {
-        fontFamily: 'Arial',
-        fontSize: 16,
-        fill: 0xFFFFFF,
-        align: 'center',
-      });
-      text.anchor.set(0.5);
-      text.x = obj.width / 2;
-      text.y = obj.height / 2;
-      graphics.addChild(text);
-      
-      graphics.x = obj.x;
-      graphics.y = pixiApp.screen.height - obj.y - obj.height;
-      
-      pixiApp.stage.addChild(graphics);
-      objectsRef.current.push(graphics);
+      container.addChild(sprite);
     });
-    
+
     return () => {
-      if (pixiApp) {
-        objectsRef.current.forEach(obj => {
-          pixiApp.stage.removeChild(obj);
-        });
-        objectsRef.current = [];
+      if (objectsContainerRef.current && pixiApp && pixiApp.stage) {
+        try {
+          // Check if the stage is still valid before removing
+          if (!pixiApp.stage.destroyed) {
+            pixiApp.stage.removeChild(objectsContainerRef.current);
+          }
+        } catch (e) {
+          console.warn('Could not remove objects container:', e);
+        }
+        objectsContainerRef.current = null;
       }
     };
   }, [gameObjects, pixiApp]);
-  
-  // This component no longer renders visible DOM elements
+
+  // Handle platforms
+  useEffect(() => {
+    if (!pixiApp || !isMountedRef.current) return;
+
+    // Create container if it doesn't exist
+    if (!platformsContainerRef.current) {
+      const container = new PIXI.Container();
+      platformsContainerRef.current = container;
+      pixiApp.stage.addChild(container);
+    }
+
+    // Clear existing platforms
+    const container = platformsContainerRef.current;
+    container.removeChildren();
+
+    // Add platforms
+    platforms.forEach(platform => {
+      const sprite = new PIXI.Graphics();
+      sprite.beginFill(0x546E7A); // Blue-grey
+      sprite.drawRect(0, 0, platform.width, platform.height);
+      sprite.endFill();
+      sprite.x = platform.x;
+      sprite.y = pixiApp.screen.height - platform.y - platform.height;
+      
+      container.addChild(sprite);
+    });
+
+    return () => {
+      if (platformsContainerRef.current && pixiApp && pixiApp.stage) {
+        try {
+          // Check if the stage is still valid before removing
+          if (!pixiApp.stage.destroyed) {
+            pixiApp.stage.removeChild(platformsContainerRef.current);
+          }
+        } catch (e) {
+          console.warn('Could not remove platforms container:', e);
+        }
+        platformsContainerRef.current = null;
+      }
+    };
+  }, [platforms, pixiApp]);
+
   return null;
 };
 
