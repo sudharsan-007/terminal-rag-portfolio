@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -59,101 +58,106 @@ const ContactForm = () => {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-terminal-text">Name</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="Your name" 
-                    className="bg-terminal-navy/30 border-terminal-text/30 text-terminal-text focus:border-terminal-text" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-terminal-text">Email</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="your.email@example.com" 
-                    className="bg-terminal-navy/30 border-terminal-text/30 text-terminal-text focus:border-terminal-text" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <FormField
-          control={form.control}
-          name="subject"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-terminal-text">Subject</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="What is this about?" 
-                  className="bg-terminal-navy/30 border-terminal-text/30 text-terminal-text focus:border-terminal-text" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="message"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-terminal-text">Message</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Your message here..." 
-                  className="bg-terminal-navy/30 border-terminal-text/30 text-terminal-text focus:border-terminal-text min-h-[120px]" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <Button 
-          type="submit" 
-          disabled={isSubmitting}
-          className="w-full bg-terminal-text hover:bg-terminal-text/80 text-terminal-navy border border-terminal-text"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <Send className="mr-2 h-4 w-4" />
-              Send Message
-            </>
-          )}
-        </Button>
-      </form>
-    </Form>
+    <div className="h-full flex flex-col">
+      <h3 className="text-[#9031aa] text-lg mb-4">Contact Me</h3>
+      <div className="bg-terminal-navy/30 border border-terminal-text/30 rounded-md p-4 flex-grow">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 h-full flex flex-col">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-terminal-text">Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Your name" 
+                        className="bg-terminal-navy/30 border-terminal-text/30 text-terminal-text focus:border-terminal-text" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-terminal-text">Email</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="your.email@example.com" 
+                        className="bg-terminal-navy/30 border-terminal-text/30 text-terminal-text focus:border-terminal-text" 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-terminal-text">Subject</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="What is this about?" 
+                      className="bg-terminal-navy/30 border-terminal-text/30 text-terminal-text focus:border-terminal-text" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem className="flex-grow flex flex-col">
+                  <FormLabel className="text-terminal-text">Message</FormLabel>
+                  <FormControl className="flex-grow">
+                    <Textarea 
+                      placeholder="Your message here..." 
+                      className="bg-terminal-navy/30 border-terminal-text/30 text-terminal-text focus:border-terminal-text h-full min-h-[100px]" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full bg-[#9031aa] hover:bg-[#9031aa]/90 text-white border border-[#9031aa] mt-auto"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Send Message
+                </>
+              )}
+            </Button>
+          </form>
+        </Form>
+      </div>
+    </div>
   );
 };
 

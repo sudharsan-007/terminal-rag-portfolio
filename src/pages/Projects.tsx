@@ -1,8 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import ProjectList from '@/components/projects/ProjectList';
 import ProjectDetail from '@/components/projects/ProjectDetail';
 import { Project } from '@/types/project';
@@ -226,43 +223,32 @@ const Projects: React.FC = () => {
   }, [selectedProjectIndex, showDetailView, projects]);
 
   return (
-    <div className="h-screen flex flex-col bg-terminal-bg overflow-hidden">
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isLoaded ? 1 : 0 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto flex flex-col h-screen px-4"
-      >
-        <Header />
-        
-        <main className="flex-grow flex flex-col mt-4 mb-8 overflow-hidden">
-          <div className="mb-4">
-            <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-              sudharsan@portfolio:~/projects
-            </div>
-          </div>
-          
-          {showDetailView ? (
-            <ProjectDetail 
-              project={projects[selectedProjectIndex]} 
-              onClose={() => setShowDetailView(false)}
-            />
-          ) : (
-            <ProjectList 
-              projects={projects} 
-              selectedIndex={selectedProjectIndex} 
-              setSelectedIndex={setSelectedProjectIndex}
-              onViewDetails={() => setShowDetailView(true)}
-            />
-          )}
-        </main>
-        
-        <Footer />
-      </motion.div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isLoaded ? 1 : 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col h-full"
+    >
+      <div className="mb-4">
+        <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
+          sudharsan@portfolio:~/projects
+        </div>
+      </div>
       
-      {/* Background effects */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
-    </div>
+      {showDetailView ? (
+        <ProjectDetail 
+          project={projects[selectedProjectIndex]} 
+          onClose={() => setShowDetailView(false)}
+        />
+      ) : (
+        <ProjectList 
+          projects={projects} 
+          selectedIndex={selectedProjectIndex} 
+          setSelectedIndex={setSelectedProjectIndex}
+          onViewDetails={() => setShowDetailView(true)}
+        />
+      )}
+    </motion.div>
   );
 };
 

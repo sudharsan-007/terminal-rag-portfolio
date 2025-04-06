@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, X } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
@@ -93,4 +92,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
+export default memo(Header);

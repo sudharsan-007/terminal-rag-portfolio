@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -104,12 +103,13 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
 
   return (
     <div 
-      className={`flex flex-col ${className}`}
+      className={`flex flex-col h-full ${className}`}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       ref={terminalRef}
     >
-      <div className="terminal-window h-[60vh] md:h-[50vh] flex flex-col mb-4">
+      {/* Terminal content area (scrollable) */}
+      <div className="terminal-window flex-grow overflow-hidden flex flex-col mb-4">
         <div className="flex-grow overflow-y-auto p-2">
           <AnimatePresence mode="wait">
             <motion.div
@@ -139,7 +139,7 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
       </div>
       
       {/* Navigation buttons */}
-      <div className="flex justify-between mb-6">
+      <div className="flex justify-between mb-4">
         <button
           onClick={() => handleNavigation('prev')}
           disabled={currentIndex === 0 || isProcessing}
@@ -167,7 +167,7 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
         </button>
       </div>
       
-      {/* Command input */}
+      {/* Command input - fixed at the bottom */}
       <form onSubmit={handleSubmit} className="relative">
         <div className="flex items-center terminal-prompt">
           <input
@@ -177,7 +177,7 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
             onChange={(e) => setInputValue(e.target.value)}
             disabled={isProcessing}
             placeholder="Type a command or ask me anything..."
-            className="terminal-input pl-4"
+            className="terminal-input pl-4 w-full"
             aria-label="Terminal input"
           />
         </div>

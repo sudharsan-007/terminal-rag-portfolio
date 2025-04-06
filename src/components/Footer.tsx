@@ -1,12 +1,16 @@
-
-import React from 'react';
+import React, { memo } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  className?: string;
+}
+
+const Footer: React.FC<FooterProps> = ({ className }) => {
   const isMobile = useIsMobile();
   
   return (
-    <footer className="mt-auto py-4 px-4">
+    <footer className={cn("mt-auto py-4 px-4", className)}>
       {!isMobile && (
         <div className="border-t border-terminal-text/30 pt-4 text-terminal-text/70 text-sm">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -32,4 +36,4 @@ const Footer: React.FC = () => {
   );
 };
 
-export default Footer;
+export default memo(Footer);

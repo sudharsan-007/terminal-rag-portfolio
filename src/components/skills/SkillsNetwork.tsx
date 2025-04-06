@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { skillsData } from '@/data/skillsData';
@@ -12,6 +11,26 @@ const SkillsNetwork: React.FC = () => {
   const isMobile = useIsMobile();
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [status, setStatus] = useState<string>("Hover over nodes to see skills");
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  // Update dimensions on resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (graphContainerRef.current) {
+        setDimensions({
+          width: graphContainerRef.current.clientWidth,
+          height: graphContainerRef.current.clientHeight
+        });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, []);
 
   // Group colors mapping
   const groupColors: Record<string, string> = {
@@ -152,7 +171,7 @@ const SkillsNetwork: React.FC = () => {
   return (
     <div 
       ref={graphContainerRef}
-      className="w-full h-full relative" 
+      className="w-full h-full absolute inset-0 p-4" 
       onClick={handleBackgroundClick}
     >
       {/* Status header */}
@@ -188,6 +207,8 @@ const SkillsNetwork: React.FC = () => {
       <ForceGraph2D
         ref={graphRef}
         graphData={skillsData}
+        width={dimensions.width}
+        height={dimensions.height}
         nodeRelSize={1}
         nodeVal={(node: SkillNode) => getNodeRadius(node)}
         nodeColor={(node: SkillNode) => getNodeColor(node)}

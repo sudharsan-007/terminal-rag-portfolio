@@ -38,7 +38,7 @@ const CommitHistory = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
   
-  const canvasHeight = isMobile ? 250 : 300;
+  const canvasHeight = isMobile ? 160 : 180;
   
   const [isAnimating, setIsAnimating] = useState(true);
   const animationRef = useRef<number | null>(null);
@@ -579,7 +579,7 @@ const CommitHistory = () => {
     
     snake.body.forEach((segment, index) => {
       if (index === 0) {
-        ctx.fillStyle = '#9C27B0';
+        ctx.fillStyle = '#9031aa';
       } else {
         ctx.fillStyle = '#4AFF91';
       }
@@ -633,17 +633,13 @@ const CommitHistory = () => {
   };
 
   return (
-    <div className="w-full h-full">
-      <div className="border border-terminal-text/30 rounded bg-terminal-navy/40 p-2">
-        <canvas 
-          ref={canvasRef} 
-          className="w-full cursor-pointer"
-          height={canvasHeight}
-          onClick={() => setIsAnimating(!isAnimating)}
-          aria-label="Interactive social media links animation"
-          role="img"
-        />
-      </div>
+    <div className="border border-terminal-text/30 rounded-md p-4 bg-terminal-navy/20">
+      <h3 className="text-[#9031aa] text-lg mb-4">Socials - Say hi to me 👋</h3>
+      <canvas
+        ref={canvasRef}
+        className="w-full rounded-sm"
+        style={{ height: `${canvasHeight}px` }}
+      ></canvas>
     </div>
   );
 };

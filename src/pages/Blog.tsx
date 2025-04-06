@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import { getAllBlogPosts } from '@/data/blogData';
 import BlogList from '@/components/blog/BlogList';
 import BlogSearch from '@/components/blog/BlogSearch';
@@ -153,66 +151,71 @@ const Blog: React.FC = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-terminal-bg overflow-hidden">
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isLoaded ? 1 : 0 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto flex flex-col h-screen px-4"
-      >
-        <Header />
-        
-        <main className="flex-grow flex flex-col mt-4 mb-8 overflow-hidden">
-          <div className="mb-4">
-            <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-              sudharsan@portfolio:~/blogs
-            </div>
-          </div>
-          
-          <div className="terminal-window flex-grow overflow-hidden flex flex-col">
-            <div className="p-6 pb-3">
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="w-full sm:w-4/5">
-                  <BlogSearch 
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    searchInputRef={searchInputRef}
-                    filteredPostsCount={filteredPosts.length}
-                  />
-                </div>
-                
-                {!isMobile && (
-                  <div className="w-full sm:w-1/5 flex justify-end items-center">
-                    <ViewModeToggle 
-                      viewMode={viewMode} 
-                      setViewMode={setViewMode}
-                    />
-                  </div>
-                )}
-              </div>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isLoaded ? 1 : 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col h-full"
+    >
+      <div className={`${isMobile ? 'mb-2' : 'mb-4'}`}>
+        <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
+          sudharsan@portfolio:~/blogs
+        </div>
+      </div>
+      
+      <div className="terminal-window flex-grow flex flex-col overflow-hidden">
+        <div className={`${isMobile ? 'p-3 pb-2' : 'p-6 pb-3'}`}>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="w-full sm:w-4/5">
+              <BlogSearch 
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                searchInputRef={searchInputRef}
+                filteredPostsCount={filteredPosts.length}
+              />
             </div>
             
-            <ScrollArea className="flex-grow px-6">
-              <div className="pr-4">
-                <BlogList 
-                  posts={filteredPosts}
-                  viewMode={viewMode}
-                  selectedPostIndex={selectedPostIndex}
-                  setSelectedPostIndex={setSelectedPostIndex}
-                  isMobile={isMobile}
+            {!isMobile && (
+              <div className="w-full sm:w-1/5 flex justify-end items-center">
+                <ViewModeToggle 
+                  viewMode={viewMode} 
+                  setViewMode={setViewMode}
                 />
               </div>
-            </ScrollArea>
+            )}
           </div>
-        </main>
+        </div>
         
-        <Footer />
-      </motion.div>
-      
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
-      
-      {!isMobile && <KeyboardNavHelp />}
-    </div>
+        <div className="flex-grow overflow-hidden">
+          <ScrollArea className={`h-full ${isMobile ? 'px-3' : 'px-6'}`}>
+            <div className={`${isMobile ? 'pr-2' : 'pr-4'}`}>
+              <BlogList 
+                posts={filteredPosts}
+                viewMode={viewMode}
+                selectedPostIndex={selectedPostIndex}
+                setSelectedPostIndex={setSelectedPostIndex}
+                isMobile={isMobile}
+              />
+            </div>
+          </ScrollArea>
+        </div>
+        
+        {!isMobile && (
+          <div className="border-t border-terminal-text/30 mt-4 pt-4 px-6 pb-4 text-terminal-text/70 text-sm">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p>↑/↓/←/→: Navigate posts</p>
+                <p>Enter: Open post</p>
+              </div>
+              <div>
+                <p>/: Focus search</p>
+                <p>V: Toggle view mode</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 };
 
