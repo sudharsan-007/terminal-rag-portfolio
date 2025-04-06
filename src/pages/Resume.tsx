@@ -44,15 +44,10 @@ const Resume = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: isLoaded ? 1 : 0 }}
-      transition={{ duration: 0.5 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col h-full"
     >
-      <div className="mb-4">
-        <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-          sudharsan@portfolio:~/resume
-        </div>
-      </div>
-      
       <div className="terminal-window flex-grow p-4">
         <div className="flex justify-between items-center mb-4 border-b border-terminal-text/30 pb-2">
           <h2 className="text-xl text-terminal-accent1">

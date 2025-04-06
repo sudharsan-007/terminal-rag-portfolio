@@ -5,7 +5,6 @@ import { getAllBlogPosts } from '@/data/blogData';
 import BlogList from '@/components/blog/BlogList';
 import BlogSearch from '@/components/blog/BlogSearch';
 import ViewModeToggle from '@/components/blog/ViewModeToggle';
-import KeyboardNavHelp from '@/components/blog/KeyboardNavHelp';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -154,15 +153,10 @@ const Blog: React.FC = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: isLoaded ? 1 : 0 }}
-      transition={{ duration: 0.5 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col h-full"
     >
-      <div className={`${isMobile ? 'mb-2' : 'mb-4'}`}>
-        <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-          sudharsan@portfolio:~/blogs
-        </div>
-      </div>
-      
       <div className="terminal-window flex-grow flex flex-col overflow-hidden">
         <div className={`${isMobile ? 'p-3 pb-2' : 'p-6 pb-3'}`}>
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -199,21 +193,6 @@ const Blog: React.FC = () => {
             </div>
           </ScrollArea>
         </div>
-        
-        {!isMobile && (
-          <div className="border-t border-terminal-text/30 mt-4 pt-4 px-6 pb-4 text-terminal-text/70 text-sm">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p>↑/↓/←/→: Navigate posts</p>
-                <p>Enter: Open post</p>
-              </div>
-              <div>
-                <p>/: Focus search</p>
-                <p>V: Toggle view mode</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </motion.div>
   );

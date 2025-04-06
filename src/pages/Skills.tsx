@@ -19,15 +19,10 @@ const Skills: React.FC = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: isLoaded ? 1 : 0 }}
-      transition={{ duration: 0.5 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col h-full"
     >
-      <div className="mb-4">
-        <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-          sudharsan@portfolio:~/skills
-        </div>
-      </div>
-      
       <div className="terminal-window flex-grow flex flex-col overflow-hidden">
         <div className="flex-grow overflow-hidden relative">
           <SkillsNetwork />

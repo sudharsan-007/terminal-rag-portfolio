@@ -66,29 +66,21 @@ const BlogPost: React.FC = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: isLoaded ? 1 : 0 }}
-      transition={{ duration: 0.5 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col h-full"
     >
-      <div className={`${isMobile ? 'mb-2' : 'mb-4'} flex items-center justify-between`}>
-        <div className="flex items-center max-w-[90%] overflow-hidden">
-          <div className="text-terminal-text text-lg sm:text-xl md:text-2xl truncate">
-            sudharsan@portfolio:~/blogs/{post?.slug?.length > 20 ? 
-              post?.slug?.substring(0, 20) + '...' : post?.slug || 'not-found'}
-          </div>
-        </div>
-        
-        <button
-          onClick={() => navigate('/blog')}
-          className="px-3 py-2 ml-2 border border-terminal-text/30 rounded text-sm text-terminal-text/70 hover:bg-terminal-text/10 hover:text-terminal-text transition-colors flex-shrink-0 min-w-[60px] text-center"
-          aria-label="Press ESC to go back"
-        >
-          [ESC]
-        </button>
-      </div>
-      
       <div className="terminal-window flex-grow overflow-auto">
         <article className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
           <header className={`${isMobile ? 'mb-4' : 'mb-8'}`}>
+            <button
+              onClick={() => navigate('/blog')}
+              className="px-3 py-1.5 mb-4 border border-terminal-text/30 rounded text-sm text-terminal-text/70 hover:bg-terminal-text/10 hover:text-terminal-text transition-colors inline-flex items-center"
+              aria-label="Press ESC to go back"
+            >
+              <ArrowLeft size={16} className="mr-1.5" /> Back to blogs
+            </button>
+            
             <h1 className={`${isMobile ? 'text-xl' : 'text-2xl md:text-3xl lg:text-4xl'} font-bold ${isMobile ? 'mb-2' : 'mb-4'} text-terminal-accent1`}>
               {post.title}
             </h1>
@@ -171,17 +163,6 @@ const BlogPost: React.FC = () => {
               ))}
             </div>
           </section>
-        )}
-        
-        {/* Navigation help similar to Projects page - hide on mobile */}
-        {!isMobile && (
-          <div className="px-6 md:px-8 pb-6 border-t border-terminal-text/30 pt-4 text-terminal-text/70 text-sm">
-            <div className="flex justify-between">
-              <div>↑/↓: Navigate related posts</div>
-              <div>Enter: Open post</div>
-              <div>ESC: Return to blog list</div>
-            </div>
-          </div>
         )}
       </div>
     </motion.div>

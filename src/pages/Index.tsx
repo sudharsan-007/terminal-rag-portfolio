@@ -19,15 +19,10 @@ const Index = () => {
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: isLoaded ? 1 : 0 }}
-      transition={{ duration: 0.5 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col h-full"
-    >
-      <div className="mb-4">
-        <div className="text-terminal-text text-lg sm:text-xl md:text-2xl">
-          sudharsan@portfolio:~
-        </div>
-      </div>
-      
+    >      
       <AsciiLogo className="mb-4 flex-shrink-0" />
       
       <div className="flex-grow overflow-hidden flex flex-col">

@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Project } from '@/types/project';
 import ProjectCard from './ProjectCard';
@@ -63,20 +62,6 @@ const ProjectList: React.FC<ProjectListProps> = ({
             ))}
           </div>
         </ScrollArea>
-      </div>
-      
-      {/* Navigation help */}
-      <div className="border-t border-terminal-text/30 mt-4 pt-4 text-terminal-text/70 text-sm">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p>↑/↓: Navigate projects</p>
-            <p>Enter: View project details</p>
-          </div>
-          <div>
-            <p>G: Open GitHub repository</p>
-            <p>ESC: Return from details view</p>
-          </div>
-        </div>
       </div>
     </div>
   );

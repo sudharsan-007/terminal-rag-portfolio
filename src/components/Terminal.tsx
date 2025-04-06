@@ -123,9 +123,9 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
               {responses[currentIndex] && (
                 <div>
                   <div className="mb-4">
-                    <span className="text-terminal-accent2">&gt;</span> <span className="text-terminal-text">{responses[currentIndex].question}</span>
+                    <span className="text-terminal-accent2">&gt;</span> <span className="text-terminal-text break-words">{responses[currentIndex].question}</span>
                   </div>
-                  <div className="content-block">
+                  <div className="content-block overflow-x-auto">
                     <TypewriterEffect text={responses[currentIndex].answer} />
                   </div>
                 </div>
@@ -176,7 +176,7 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             disabled={isProcessing}
-            placeholder="Type a command or ask me anything..."
+            placeholder={isMobile ? "Ask me anything..." : "Type a command or ask me anything..."}
             className="terminal-input pl-4 w-full"
             aria-label="Terminal input"
           />
