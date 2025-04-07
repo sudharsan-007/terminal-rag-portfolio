@@ -1,7 +1,8 @@
+
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import StaticNoiseBackground from './StaticNoiseBackground';
+import RetroTerminalBackground from './RetroTerminalBackground';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Content layer */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col h-full">
         <Header />
-        <main className="flex-grow overflow-hidden py-4">
+        <main className="flex-grow overflow-auto py-4">
           {children}
         </main>
         <Footer className="mt-auto py-4" />
