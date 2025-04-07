@@ -23,7 +23,7 @@ const RetroTerminalBackground: React.FC = () => {
   useEffect(() => {
     const generateStaticNoise = () => {
       const noise = [];
-      const noiseCount = 100; // Reduced for performance
+      const noiseCount = 150; // Number of static dots
       
       for (let i = 0; i < noiseCount; i++) {
         const flickerSpeed = Math.random() > 0.7 ? 'fast' : Math.random() > 0.5 ? 'medium' : 'slow';
@@ -33,7 +33,7 @@ const RetroTerminalBackground: React.FC = () => {
           left: `${Math.random() * 100}%`,
           top: `${Math.random() * 100}%`,
           size: `${Math.random() * 2 + 0.5}px`,
-          opacity: Math.random() * 0.2, // Even lower opacity
+          opacity: Math.random() * 0.3,
           flickerSpeed
         });
       }
@@ -53,13 +53,13 @@ const RetroTerminalBackground: React.FC = () => {
               ...dot,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              opacity: Math.random() * 0.2
+              opacity: Math.random() * 0.3
             };
           }
           return dot;
         });
       });
-    }, 100); // Slowed down slightly
+    }, 80);
     
     const mediumNoiseInterval = setInterval(() => {
       setStaticNoise(prevNoise => {
@@ -69,13 +69,13 @@ const RetroTerminalBackground: React.FC = () => {
               ...dot,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              opacity: Math.random() * 0.2
+              opacity: Math.random() * 0.3
             };
           }
           return dot;
         });
       });
-    }, 200);
+    }, 150);
     
     const slowNoiseInterval = setInterval(() => {
       setStaticNoise(prevNoise => {
@@ -85,31 +85,31 @@ const RetroTerminalBackground: React.FC = () => {
               ...dot,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              opacity: Math.random() * 0.2
+              opacity: Math.random() * 0.3
             };
           }
           return dot;
         });
       });
-    }, 350);
+    }, 300);
     
     // Occasional screen glitch effect
     const glitchInterval = setInterval(() => {
       setGlitchActive(true);
       setTimeout(() => setGlitchActive(false), 150);
-    }, 7000);
+    }, 5000);
     
     // Generate TV static lines
     const generateTvStaticLines = () => {
       const lines = [];
-      const lineCount = Math.floor(Math.random() * 3) + 1; // Fewer lines
+      const lineCount = Math.floor(Math.random() * 4) + 2;
       
       for (let i = 0; i < lineCount; i++) {
         lines.push({
           id: i,
           top: `${Math.random() * 100}%`,
-          height: `${Math.random() * 3 + 0.5}px`, // Thinner lines
-          opacity: Math.random() * 0.3 + 0.1, // More subtle opacity
+          height: `${Math.random() * 4 + 1}px`,
+          opacity: Math.random() * 0.5 + 0.2,
           speed: Math.random() * 150 + 100
         });
       }
@@ -124,7 +124,7 @@ const RetroTerminalBackground: React.FC = () => {
       setTimeout(() => {
         setTvStaticLines([]);
       }, 200);
-    }, 3000);
+    }, 2000);
     
     return () => {
       clearInterval(fastNoiseInterval);
@@ -160,7 +160,7 @@ const RetroTerminalBackground: React.FC = () => {
         style={{ 
           backgroundImage: 'linear-gradient(transparent 50%, rgba(0, 0, 0, 0.05) 50%)', 
           backgroundSize: '100% 4px',
-          opacity: 0.1,
+          opacity: 0.2,
           zIndex: -8
         }} 
       />
@@ -186,7 +186,7 @@ const RetroTerminalBackground: React.FC = () => {
         style={{ zIndex: -6 }} 
       />
       
-      {/* Animation styling - using regular style tag instead of style jsx */}
+      {/* Animation styling */}
       <style>
         {`
           @keyframes moveStaticLine {

@@ -16,13 +16,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col h-full relative z-10">
         <Header />
-        <main className="flex-grow overflow-hidden py-4">
+        <main className="flex-grow overflow-auto py-4">
           {children}
         </main>
         <Footer className="mt-auto py-4" />
       </div>
       
-      {/* Background effects */}
+      {/* Background gradient overlay */}
       <div className="fixed inset-0 -z-0 bg-gradient-to-b from-black to-terminal-navy/40 opacity-80" />
     </div>
   );
