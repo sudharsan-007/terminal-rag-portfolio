@@ -1,0 +1,130 @@
+[project]
+name = "terminal-portfolio-backend"
+version = "2.0.0"
+description = "RAG-powered backend for Terminal Portfolio using PydanticAI"
+authors = [
+    {name = "Sudharsan Ananth", email = "sudharsan.ananth@example.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+keywords = ["fastapi", "rag", "pydantic-ai", "portfolio", "ai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    # FastAPI and Web Framework
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
+    
+    # PydanticAI and AI Dependencies
+    "pydantic-ai>=0.0.13",
+    "openai>=1.3.7",
+    "chromadb>=0.4.18",
+    "tiktoken>=0.5.2",
+    
+    # Data Processing
+    "pandas>=2.1.4",
+    "numpy>=1.25.2",
+    "python-docx>=1.1.0",
+    "PyPDF2>=3.0.1",
+    "markdown>=3.5.1",
+    
+    # HTTP and Networking
+    "httpx>=0.25.2",
+    "aiofiles>=23.2.1",
+    
+    # Configuration and Environment
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.0",
+    
+    # CORS and Security
+    "python-cors>=1.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-asyncio>=0.21.1",
+    "black>=23.11.0",
+    "isort>=5.12.0",
+    "mypy>=1.7.1",
+    "httpx>=0.25.2",  # For testing
+]
+
+[project.scripts]
+ingest-content = "app.scripts.ingest_content:main"
+build-index = "app.scripts.build_index:main"
+health-check = "app.scripts.health_check:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["app"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "chromadb.*",
+    "pydantic_ai.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+] 
