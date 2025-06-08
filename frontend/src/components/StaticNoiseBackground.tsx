@@ -1,6 +1,29 @@
 import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
 
+// Configuration for the CRT static noise effect
+// All parameters can be easily modified here
+const STATIC_NOISE_CONFIG = {
+  // Number of dots on screen at once
+  MAX_DOTS: 100,
+  
+  // Dot appearance
+  DOT_COLOR: 0x4AFF91, // Terminal green color
+  MIN_DOT_SIZE: 2,     // Minimum dot size in pixels
+  MAX_DOT_SIZE: 4,     // Maximum dot size in pixels
+  MIN_OPACITY: 0.3,    // Minimum opacity
+  MAX_OPACITY: 0.7,    // Maximum opacity
+  
+  // Dot behavior
+  MIN_LIFETIME: 5,     // Minimum frames a dot stays visible
+  MAX_LIFETIME: 10,    // Maximum frames a dot stays visible
+  FLICKER_PROBABILITY: 0.2, // Chance of flicker per update
+  
+  // Performance settings
+  UPDATE_INTERVAL: 3, // Update every N frames (higher = better performance)
+  MAX_RESOLUTION: 2,  // Maximum resolution multiplier (1-2)
+};
+
 const StaticNoiseBackground: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const pixiAppRef = useRef<PIXI.Application | null>(null);
@@ -13,7 +36,7 @@ const StaticNoiseBackground: React.FC = () => {
       resizeTo: window,
       backgroundAlpha: 0,
       antialias: false,
-      resolution: Math.min(2, window.devicePixelRatio), // Cap at 2x for performance
+      resolution: Math.min(STATIC_NOISE_CONFIG.MAX_RESOLUTION, window.devicePixelRatio),
       autoDensity: true
     });
     
@@ -24,18 +47,6 @@ const StaticNoiseBackground: React.FC = () => {
     // Create a container for our static dots
     const dotsContainer = new PIXI.Container();
     app.stage.addChild(dotsContainer);
-    
-    // Configuration for the static effect
-    const config = {
-      maxDots: 100, // Reduced from 300 for better performance
-      dotColor: 0x4AFF91, // Terminal green color
-      maxOpacity: 0.7,
-      minOpacity: 0.3,
-      maxLifetime: 15,
-      minLifetime: 5,
-      flickerProbability: 0.1, // 10% chance to flicker each update
-      updateInterval: 2 // Update every 2 frames for performance
-    };
     
     // Create dots array to track our dots
     const dots: {
@@ -51,7 +62,7 @@ const StaticNoiseBackground: React.FC = () => {
       frameCount++;
       
       // Only update static on specific frames for performance
-      if (frameCount % config.updateInterval === 0) {
+      if (frameCount % STATIC_NOISE_CONFIG.UPDATE_INTERVAL === 0) {
         // Remove expired dots
         for (let i = dots.length - 1; i >= 0; i--) {
           const dot = dots[i];
@@ -62,18 +73,22 @@ const StaticNoiseBackground: React.FC = () => {
             dots.splice(i, 1);
           } else {
             // Random flicker
-            if (Math.random() < config.flickerProbability) {
-              dot.sprite.alpha = config.minOpacity + Math.random() * (config.maxOpacity - config.minOpacity);
+            if (Math.random() < STATIC_NOISE_CONFIG.FLICKER_PROBABILITY) {
+              dot.sprite.alpha = STATIC_NOISE_CONFIG.MIN_OPACITY + 
+                Math.random() * (STATIC_NOISE_CONFIG.MAX_OPACITY - STATIC_NOISE_CONFIG.MIN_OPACITY);
             }
           }
         }
         
         // Add new dots if needed
-        while (dots.length < config.maxDots) {
-          // Create a new dot
+        while (dots.length < STATIC_NOISE_CONFIG.MAX_DOTS) {
+          // Create a new dot with random size
           const dot = new PIXI.Graphics();
-          dot.beginFill(config.dotColor);
-          dot.drawRect(0, 0, 1, 1); // Single pixel
+          const dotSize = STATIC_NOISE_CONFIG.MIN_DOT_SIZE + 
+            Math.random() * (STATIC_NOISE_CONFIG.MAX_DOT_SIZE - STATIC_NOISE_CONFIG.MIN_DOT_SIZE);
+          
+          dot.beginFill(STATIC_NOISE_CONFIG.DOT_COLOR);
+          dot.drawRect(0, 0, dotSize, dotSize);
           dot.endFill();
           
           // Position randomly on screen
@@ -81,13 +96,16 @@ const StaticNoiseBackground: React.FC = () => {
           dot.y = Math.random() * app.screen.height;
           
           // Set initial opacity
-          dot.alpha = config.minOpacity + Math.random() * (config.maxOpacity - config.minOpacity);
+          dot.alpha = STATIC_NOISE_CONFIG.MIN_OPACITY + 
+            Math.random() * (STATIC_NOISE_CONFIG.MAX_OPACITY - STATIC_NOISE_CONFIG.MIN_OPACITY);
           
           // Add to container
           dotsContainer.addChild(dot);
           
           // Track the dot
-          const lifetime = Math.floor(config.minLifetime + Math.random() * (config.maxLifetime - config.minLifetime));
+          const lifetime = Math.floor(STATIC_NOISE_CONFIG.MIN_LIFETIME + 
+            Math.random() * (STATIC_NOISE_CONFIG.MAX_LIFETIME - STATIC_NOISE_CONFIG.MIN_LIFETIME));
+          
           dots.push({
             sprite: dot,
             life: lifetime,
